@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Input from "../UI/Input";
 import Button from "../UI/Button";
-import { IoPerson, IoLanguage } from "react-icons/io5";
+import { IoPerson, IoLanguage, IoMail } from "react-icons/io5";
 import Logo from "../assets/logo.png";
 import Footer from "../UI/Footer";
 import { useTranslation } from "../contexts/TranslationContext";
@@ -10,6 +10,7 @@ import { completeOAuthRegistration } from "../lib/service";
 export default function OAuthSignup() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
   const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -27,12 +28,13 @@ export default function OAuthSignup() {
     const params = new URLSearchParams(window.location.search);
     const provider = params.get('provider');
     const email = params.get('email');
-    const name = params.get('name');
+    const nameParam = params.get('name');
     const providerId = params.get('providerId');
     const redirectUriParam = params.get('redirect_uri');
     
-    if (provider && email && name && providerId) {
-      setOauthData({ provider, email, name, providerId });
+    if (provider && email && nameParam && providerId) {
+      setOauthData({ provider, email, name: nameParam, providerId });
+      setName(nameParam); // Pre-fill name from OAuth provider
       setRedirectUri(redirectUriParam || 'http://localhost:3001/auth/poswize/callback');
     } else {
       setError("Invalid OAuth registration request. Missing required parameters.");
@@ -45,6 +47,11 @@ export default function OAuthSignup() {
       setError(t.pleaseEnterUsername);
       return;
     }
+    
+    if (!name.trim()) {
+      setError(t.pleaseEnterName || "Please enter your name");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -53,7 +60,7 @@ export default function OAuthSignup() {
       const result = await completeOAuthRegistration({
         username: username.trim(),
         email: oauthData.email,
-        name: oauthData.name,
+        name: name.trim(), // Use the editable name field
         provider: oauthData.provider,
         providerId: oauthData.providerId,
       });
@@ -137,12 +144,45 @@ export default function OAuthSignup() {
             <p className="text-gray-600">
               {t.chooseUsername}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
-              {oauthData.email}
-            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field - Disabled/Grayed Out */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t.email}
+              </label>
+              <Input
+                type="email"
+                icon={<IoMail />}
+                placeholder={t.email}
+                value={oauthData.email}
+                disabled
+                isRTL={isRTL}
+                className="bg-gray-100 cursor-not-allowed opacity-60"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t.emailFromOAuth || `Email from ${oauthData.provider}`}
+              </p>
+            </div>
+
+            {/* Name Field - Editable */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t.name || "Full Name"}
+              </label>
+              <Input
+                type="text"
+                icon={<IoPerson />}
+                placeholder={t.name || "Full Name"}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                isRTL={isRTL}
+                required
+              />
+            </div>
+
+            {/* Username Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t.username}
@@ -167,7 +207,7 @@ export default function OAuthSignup() {
             <Button
               type="submit"
               primary
-              disabled={loading || !username.trim()}
+              disabled={loading || !username.trim() || !name.trim()}
               className="w-full"
             >
               {loading ? t.completing : t.completeSignup}
