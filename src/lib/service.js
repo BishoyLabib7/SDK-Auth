@@ -125,6 +125,13 @@ export async function verifyOtp(email, code) {
   });
 }
 
+export async function verifySignupOtp(email, code) {
+  return apiCall('/Auth/verifyAccount', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp: code }),
+  });
+}
+
 export async function resendOtp(email) {
   return apiCall('/Auth/resend-otp', {
     method: 'POST',

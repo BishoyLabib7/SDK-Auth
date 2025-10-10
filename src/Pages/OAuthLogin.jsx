@@ -45,6 +45,30 @@ export default function OAuthLogin() {
     if (errorParam) {
       setError(decodeURIComponent(errorParam));
     }
+    
+    // Check if user is already authenticated (has token from signup verification)
+    const authToken = localStorage.getItem('auth_token');
+    if (authToken && redirectUri) {
+      // User is authenticated, need to check if consent is needed
+      // For now, redirect to backend OAuth authorize endpoint which will handle consent
+      const getApiBaseUrl = () => {
+        if (import.meta.env.VITE_API_BASE_URL) {
+          return import.meta.env.VITE_API_BASE_URL;
+        }
+        const currentPath = window.location.pathname;
+        const origin = window.location.origin;
+        const apiPathMatch = currentPath.match(/^(\/[^\/]+)\/oauth-ui/);
+        if (apiPathMatch) {
+          return `${origin}${apiPathMatch[1]}`;
+        }
+        return origin;
+      };
+      
+      const apiBaseUrl = getApiBaseUrl();
+      // Redirect to backend authorize endpoint with token
+      // Backend will check consent and redirect appropriately
+      window.location.href = `${apiBaseUrl}/oauth/authorize?response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=poswize-client&token=${encodeURIComponent(authToken)}`;
+    }
   }, []);
 
   function initializeFirebaseIfNeeded() {

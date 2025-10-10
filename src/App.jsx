@@ -4,6 +4,7 @@ import Signup from "./Pages/Signup";
 import OAuthLogin from "./Pages/OAuthLogin";
 import OAuthConsent from "./Pages/OAuthConsent";
 import OAuthSignup from "./Pages/OAuthSignup";
+import VerifySignupOTP from "./Pages/VerifySignupOTP";
 import {
   TranslationProvider,
   LanguageTransition,
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/login" element={<OAuthLogin />} />
             <Route path="/consent" element={<OAuthConsent />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-signup-otp" element={<VerifySignupOTP />} />
             <Route path="/complete-registration" element={<OAuthSignup />} />
             <Route path="/standalone-login" element={<Login />} />
             <Route path="/forget-password" element={<ForgetPassword />} />

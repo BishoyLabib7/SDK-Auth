@@ -95,6 +95,10 @@ export default function Signup() {
       initializeFirebaseIfNeeded();
       await signUpWithEmailPassword(fullName, username, email, password);
       
+      // Store email for OTP verification
+      sessionStorage.setItem('signup_email', email);
+      sessionStorage.setItem('signup_redirect_uri', redirectUri || '');
+      
       // Get the correct base path for OAuth UI
       const getBasePath = () => {
         const pathname = window.location.pathname;
@@ -107,14 +111,8 @@ export default function Signup() {
       
       const basePath = getBasePath();
       
-      // After successful signup, redirect to login page
-      if (redirectUri) {
-        // If in OAuth flow, redirect to login with redirect_uri
-        window.location.href = `${basePath}/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      } else {
-        // If not in OAuth flow, redirect to standalone login
-        window.location.href = `${basePath}/standalone-login`;
-      }
+      // Redirect to email verification page
+      window.location.href = `${basePath}/verify-signup-otp`;
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

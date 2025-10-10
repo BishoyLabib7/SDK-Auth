@@ -48,6 +48,16 @@ export const translations = {
     otpVerify: "Verify",
     otpChangeEmail: "Change email",
     otpCodePlaceholder: "Enter 4-digit code",
+    verifyYourEmail: "Verify Your Email",
+    weSentCodeTo: "We sent a 4-digit code to",
+    enterFourDigitCode: "Enter 4-digit code",
+    verifying: "Verifying...",
+    verify: "Verify",
+    didNotReceiveCode: "Didn't receive the code?",
+    resending: "Resending...",
+    resendOtp: "Resend OTP",
+    otpResentSuccess: "OTP sent successfully!",
+    pleaseEnterCompleteOtp: "Please enter the complete 4-digit code",
 
     // Reset password
     resetNewPasswordTitle: "Create new password",
@@ -156,6 +166,16 @@ export const translations = {
     otpVerify: "تحقق",
     otpChangeEmail: "تغيير البريد الإلكتروني",
     otpCodePlaceholder: "أدخل الرمز المكون من 4 أرقام",
+    verifyYourEmail: "تحقق من بريدك الإلكتروني",
+    weSentCodeTo: "قمنا بإرسال رمز مكون من 4 أرقام إلى",
+    enterFourDigitCode: "أدخل الرمز المكون من 4 أرقام",
+    verifying: "جاري التحقق...",
+    verify: "تحقق",
+    didNotReceiveCode: "لم يصلك الرمز؟",
+    resending: "جاري إعادة الإرسال...",
+    resendOtp: "إعادة إرسال الرمز",
+    otpResentSuccess: "تم إرسال الرمز بنجاح!",
+    pleaseEnterCompleteOtp: "الرجاء إدخال الرمز المكون من 4 أرقام كاملاً",
 
     // Reset password
     resetNewPasswordTitle: "إنشاء كلمة مرور جديدة",
