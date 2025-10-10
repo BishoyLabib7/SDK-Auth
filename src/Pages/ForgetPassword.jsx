@@ -14,6 +14,9 @@ export default function ForgetPassword() {
 
   const [email, setEmail] = useState("");
   const [entered, setEntered] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
@@ -34,9 +37,37 @@ export default function ForgetPassword() {
 
   const navigate = useNavigate();
   async function handleSendReset() {
-    initializeFirebaseIfNeeded();
-    await sendPasswordResetEmail(email);
-    navigate("/verify-otp");
+    if (!email) {
+      setError("Please enter your email address");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      initializeFirebaseIfNeeded();
+      await sendPasswordResetEmail(email);
+      setSuccess(true);
+      
+      // Store email for OTP page
+      sessionStorage.setItem('resetEmail', email);
+      
+      // Navigate to OTP page after short delay
+      setTimeout(() => {
+        navigate("/verify-otp");
+      }, 1500);
+    } catch (err) {
+      // Handle specific error messages from backend
+      if (err.message.includes('No User found') || err.message.includes('not found')) {
+        setError(t.noAccountFound);
+      } else {
+        setError(err.message || t.failedToSendCode);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -78,6 +109,20 @@ export default function ForgetPassword() {
           </p>
 
           <div className="space-y-3">
+            {/* Error message */}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Success message */}
+            {success && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm">
+                {t.resetCodeSent}
+              </div>
+            )}
+
             <Input
               type="email"
               icon={<IoMail />}
@@ -85,12 +130,13 @@ export default function ForgetPassword() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               isRTL={isRTL}
+              disabled={loading || success}
             />
           </div>
 
           <div className="mt-8">
-            <Button primary onClick={handleSendReset}>
-              {t.sendResetLink}
+            <Button primary onClick={handleSendReset} disabled={loading || success}>
+              {loading ? t.sending : success ? t.codeSent : t.sendResetLink}
             </Button>
           </div>
 

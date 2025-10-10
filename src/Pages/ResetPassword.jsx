@@ -5,22 +5,37 @@ import Logo from "../assets/logo.png";
 import { IoEye, IoEyeOff, IoLanguage } from "react-icons/io5";
 import { FaLock } from "react-icons/fa";
 import { useTranslation } from "../contexts/TranslationContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { updatePassword } from "../lib/service";
 
 export default function ResetPassword() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
+  const [searchParams] = useSearchParams();
 
   const [entered, setEntered] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
   }, [entered]);
+
+  useEffect(() => {
+    // Extract email from URL parameters
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+    } else {
+      setError("Invalid reset password link. Please request a new password reset.");
+    }
+  }, [searchParams]);
 
   function initializeFirebaseIfNeeded() {
     const globals = typeof window !== "undefined" ? window : {};
@@ -39,17 +54,34 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   async function handleUpdatePassword() {
+    setError("");
+    
     if (!password || !confirmPassword) {
-      console.error("Missing password inputs");
+      setError(t.pleaseEnterBothPasswords);
       return;
     }
     if (password !== confirmPassword) {
-      console.error("Passwords do not match");
+      setError(t.passwordsDoNotMatch);
       return;
     }
-    initializeFirebaseIfNeeded();
-    await updatePassword(password);
-    navigate("/login");
+    if (!email) {
+      setError(t.emailMissing);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      initializeFirebaseIfNeeded();
+      await updatePassword(email, password);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (err) {
+      setError(err.message || t.failedToSendCode);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -91,6 +123,20 @@ export default function ResetPassword() {
           </p>
 
           <div className="space-y-3">
+            {/* Error message */}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Success message */}
+            {success && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm">
+                {t.passwordResetSuccess}
+              </div>
+            )}
+
             {/* New Password */}
             <div className="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-[#20ABF0]/20 transition">
               <span className="text-gray-400">
@@ -147,8 +193,8 @@ export default function ResetPassword() {
           </div>
 
           <div className="mt-8">
-            <Button primary onClick={handleUpdatePassword}>
-              {t.updatePassword}
+            <Button primary onClick={handleUpdatePassword} disabled={loading || success || !email}>
+              {loading ? t.updating : success ? t.success : t.updatePassword}
             </Button>
           </div>
         </div>

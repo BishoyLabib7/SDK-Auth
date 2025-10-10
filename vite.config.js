@@ -5,4 +5,19 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(),tailwindcss()],
+  base: '/oauth-ui/',
+  build: {
+    outDir: 'dist/oauth-ui',
+    emptyOutDir: true,
+  },
+  server: {
+    port: 3003,
+    proxy: {
+      '/': {
+        target: 'http://localhost:3010',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })

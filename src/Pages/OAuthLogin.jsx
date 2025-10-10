@@ -4,51 +4,54 @@ import Input from "../UI/Input";
 import Button from "../UI/Button";
 import { FcGoogle } from "react-icons/fc";
 import { ImAppleinc } from "react-icons/im";
-import { IoMail, IoEye, IoEyeOff, IoLanguage, IoPerson } from "react-icons/io5";
+import { IoMail, IoEye, IoEyeOff, IoLanguage } from "react-icons/io5";
 import { FaLock } from "react-icons/fa";
 import Logo from "../assets/logo.png";
 import Footer from "../UI/Footer";
 import { useTranslation } from "../contexts/TranslationContext";
 import {
-  signUpWithEmailPassword,
+  loginWithEmailPassword,
   loginWithGoogle,
   loginWithApple,
 } from "../lib/service";
 import { Link } from "react-router-dom";
 
-export default function Signup() {
-  // Get translation context
+export default function OAuthLogin() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
-
-  // State
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [isRemembered, setIsRemembered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [entered, setEntered] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
-  // Get redirect URI from URL params (for OAuth flow)
-  const urlParams = new URLSearchParams(window.location.search);
-  const redirectUri = urlParams.get('redirect_uri');
+
+  // Get URL parameters
+  const [urlParams, setUrlParams] = useState({});
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
   }, [entered]);
 
-  // Firebase mock setup using global variables
-  // Expected globals: __app_id, __firebase_config, __initial_auth_token
+  useEffect(() => {
+    // Parse URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const redirectUri = params.get('redirect_uri');
+    const appName = params.get('appName');
+    const errorParam = params.get('error');
+    
+    setUrlParams({ redirectUri, appName, error: errorParam });
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+    }
+  }, []);
+
   function initializeFirebaseIfNeeded() {
     const globals = typeof window !== "undefined" ? window : {};
     const appId = globals.__app_id;
     const config = globals.__firebase_config;
     const token = globals.__initial_auth_token;
-    // Mock init: just log presence; in real setup we'd initialize Firebase here
     console.log("[firebase:init]", {
       appId,
       hasConfig: !!config,
@@ -56,44 +59,31 @@ export default function Signup() {
     });
   }
 
-  async function handlePrimarySignUp() {
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+  async function handlePrimarySignIn() {
+    if (!email || !password) {
+      setError("Please enter both email and password");
       return;
     }
-    if (!agreeToTerms) {
-      setError("Please agree to terms and conditions");
-      return;
-    }
-    
+
     setLoading(true);
     setError("");
     
     try {
       initializeFirebaseIfNeeded();
-      await signUpWithEmailPassword(fullName, email, password);
-      
-      // After successful signup, redirect to login page
-      if (redirectUri) {
-        // If in OAuth flow, redirect to login with redirect_uri
-        window.location.href = `/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      } else {
-        // If not in OAuth flow, redirect to standalone login
-        window.location.href = '/login';
-      }
+      await loginWithEmailPassword(email, password, isRemembered);
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  function handleGoogleSignUp() {
+  function handleGoogleSignIn() {
     initializeFirebaseIfNeeded();
     loginWithGoogle();
   }
 
-  function handleAppleSignUp() {
+  function handleAppleSignIn() {
     initializeFirebaseIfNeeded();
     loginWithApple();
   }
@@ -128,16 +118,27 @@ export default function Signup() {
             className=" mx-auto mb-10 transition-transform duration-300 hover:scale-105"
           />
 
-          <div className="space-y-3">
-            <Input
-              type="text"
-              icon={<IoPerson />}
-              placeholder={t.fullName}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              isRTL={isRTL}
-            />
+          {/* App Name Display */}
+          {urlParams.appName && (
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                {t.signInToContinue}
+              </h2>
+              <p className="text-sm text-gray-600">
+                <strong className="text-[#20ABF0]">{urlParams.appName}</strong> {t.wantsToAccessYourAccount}
+              </p>
+            </div>
+          )}
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Inputs */}
+          <div className="space-y-3">
             <Input
               type="email"
               icon={<IoMail />}
@@ -147,6 +148,7 @@ export default function Signup() {
               isRTL={isRTL}
             />
 
+            {/* Password with eye toggle */}
             <div className="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-[#20ABF0]/20 transition">
               <span className="text-gray-400">
                 <FaLock />
@@ -168,73 +170,73 @@ export default function Signup() {
                 {showPassword ? <IoEyeOff size={18} /> : <IoEye size={18} />}
               </button>
             </div>
-
-            <div className="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-[#20ABF0]/20 transition">
-              <span className="text-gray-400">
-                <FaLock />
-              </span>
-              <input
-                className="w-full bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder={t.confirmPassword}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                dir={isRTL ? "rtl" : "ltr"}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((v) => !v)}
-                className="text-gray-500 hover:text-gray-700 transition-transform duration-150 hover:scale-105"
-                aria-label={
-                  showConfirmPassword
-                    ? t.hideConfirmPassword
-                    : t.showConfirmPassword
-                }
-              >
-                {showConfirmPassword ? (
-                  <IoEyeOff size={18} />
-                ) : (
-                  <IoEye size={18} />
-                )}
-              </button>
-            </div>
           </div>
 
-          <div className="mt-4">
+          {/* Remember + Forgot */}
+          <div className="mt-4 flex items-center justify-between">
             <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
-                checked={agreeToTerms}
-                onChange={(e) => setAgreeToTerms(e.target.checked)}
+                checked={isRemembered}
+                onChange={(e) => setIsRemembered(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-[#20ABF0] focus:ring-[#20ABF0]"
               />
-              <span>{t.agreeToTerms}</span>
+              <span>{t.rememberMe}</span>
             </label>
+            <Link
+              to="/forget-password"
+              className="text-sm text-gray-600 hover:text-gray-900 underline-offset-4 hover:underline"
+            >
+              {t.forgotPassword}
+            </Link>
           </div>
 
+          {/* Primary action */}
           <div className="mt-10">
-            {/* Error message */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                {error}
-              </div>
-            )}
-
-            <Button primary onClick={handlePrimarySignUp} disabled={loading}>
-              {loading ? "Creating account..." : t.signUp}
+            <Button 
+              primary 
+              onClick={handlePrimarySignIn}
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : t.signIn}
             </Button>
           </div>
 
-          <div className="mt-5 text-center text-sm text-gray-700">
-            <span>{t.alreadyRegistered} </span>
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="h-px bg-gray-200 flex-1" />
+            <span className="text-xs text-gray-500 whitespace-nowrap">
+              {t.continueWith}
+            </span>
+            <div className="h-px bg-gray-200 flex-1" />
+          </div>
+
+          {/* Social logins */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <SocialButton
+              icon={<FcGoogle />}
+              text={t.google}
+              onClick={handleGoogleSignIn}
+            />
+            <SocialButton
+              icon={<ImAppleinc />}
+              text={t.apple}
+              onClick={handleAppleSignIn}
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 text-center text-sm text-gray-700">
+            <span>{t.notRegistered} </span>
             <Link
-              to={`/login${redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : ''}`}
+              to={`/signup${urlParams.redirectUri ? `?redirect_uri=${encodeURIComponent(urlParams.redirectUri)}` : ''}`}
               className="font-medium text-[#20ABF0] underline-offset-4 hover:underline cursor-pointer"
             >
-              {t.signIn}
+              {t.signUp}
             </Link>
           </div>
         </div>
+        {/* Page footer */}
         <Footer language={language} />
       </div>
     </div>

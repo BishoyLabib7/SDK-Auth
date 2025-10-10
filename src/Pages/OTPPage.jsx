@@ -8,16 +8,27 @@ import { useTranslation } from "../contexts/TranslationContext";
 import { Link, useNavigate } from "react-router-dom";
 import { verifyOtp, resendOtp } from "../lib/service";
 
-export default function OTPPage({ email = "user@example.com" }) {
+export default function OTPPage({ email: emailProp }) {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
 
   const [entered, setEntered] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]); // 6 digits
+  const [otp, setOtp] = useState(["", "", "", ""]); // 4 digits
+  const [email, setEmail] = useState(emailProp || "");
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
   }, [entered]);
+
+  useEffect(() => {
+    // Get email from sessionStorage if not provided as prop
+    if (!emailProp) {
+      const storedEmail = sessionStorage.getItem('resetEmail');
+      if (storedEmail) {
+        setEmail(storedEmail);
+      }
+    }
+  }, [emailProp]);
 
   const code = useMemo(() => otp.join(""), [otp]);
 
@@ -47,7 +58,8 @@ export default function OTPPage({ email = "user@example.com" }) {
   const navigate = useNavigate();
   async function handleVerify() {
     await verifyOtp(email, code);
-    navigate("/reset-password/5");
+    // Pass email as query parameter for password reset
+    navigate(`/reset-password/token?email=${encodeURIComponent(email)}`);
   }
 
   return (
@@ -90,7 +102,7 @@ export default function OTPPage({ email = "user@example.com" }) {
           </p>
 
           <div
-            className="flex justify-between gap-2 mb-8"
+            className="flex justify-center gap-4 mb-8"
             dir={isRTL ? "rtl" : "ltr"}
           >
             {otp.map((digit, idx) => (
@@ -100,7 +112,7 @@ export default function OTPPage({ email = "user@example.com" }) {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={1}
-                className="w-12 h-12 text-center rounded-xl border border-gray-200 bg-white text-gray-900 focus:border-gray-300 focus:ring-2 focus:ring-[#20ABF0]/20 outline-none"
+                className="w-14 h-14 text-center text-lg font-semibold rounded-xl border-2 border-gray-200 bg-white text-gray-900 focus:border-[#20ABF0] focus:ring-2 focus:ring-[#20ABF0]/20 outline-none transition-all"
                 value={digit}
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}

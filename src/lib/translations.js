@@ -16,6 +16,8 @@ export const translations = {
     signIn: "Sign in",
     notRegistered: "Not registered yet?",
     signUp: "Sign up",
+    signInToContinue: "Sign in to continue",
+    wantsToAccessYourAccount: "wants to access your Poswize account",
 
     // Signup specific
     fullName: "Full Name",
@@ -40,12 +42,12 @@ export const translations = {
 
     // OTP
     otpTitle: "Enter verification code",
-    otpSubtitlePrefix: "We sent a 6-digit code to",
+    otpSubtitlePrefix: "We sent a 4-digit code to",
     otpDidntReceive: "Didn't receive the code?",
     otpResend: "Resend",
     otpVerify: "Verify",
     otpChangeEmail: "Change email",
-    otpCodePlaceholder: "Enter 6-digit code",
+    otpCodePlaceholder: "Enter 4-digit code",
 
     // Reset password
     resetNewPasswordTitle: "Create new password",
@@ -54,6 +56,56 @@ export const translations = {
     newPassword: "New password",
     confirmNewPassword: "Confirm new password",
     updatePassword: "Update password",
+
+    // OAuth Consent
+    hi: "Hi",
+    user: "User",
+    authorizationRequest: "Authorization Request",
+    wouldLikeAccess: "would like to access your Poswize account",
+    thisAppWillBeAbleTo: "This app will be able to:",
+    accessYourName: "Access your name",
+    accessYourEmail: "Access your email address",
+    accessYourPhoto: "Access your profile photo",
+    securityNotice: "Security Notice:",
+    onlyApproveIfTrust: "Only approve if you trust",
+    andInitiatedRequest: "and initiated this request.",
+    allowAccess: "Allow Access",
+    cancel: "Cancel",
+    revokeAccessNotice: "You can revoke access at any time from your account settings.",
+    appDomain: "App domain:",
+    processing: "Processing...",
+    loadingConsentInfo: "Loading consent information...",
+    invalidConsentRequest: "Invalid consent request. Missing required parameters.",
+
+    // OAuth Signup
+    completeRegistration: "Complete Registration",
+    chooseUsername: "Choose a username for your account",
+    username: "Username",
+    completeSignup: "Complete Signup",
+    registrationComplete: "Registration Complete!",
+    redirectingOAuth: "Redirecting to complete OAuth flow...",
+    loadingRegistrationInfo: "Loading registration information...",
+    invalidOAuthRequest: "Invalid OAuth registration request. Missing required parameters.",
+    pleaseEnterUsername: "Please enter a username",
+    registrationFailed: "Registration failed. Please try again.",
+    completing: "Completing...",
+
+    // ForgetPassword
+    pleaseEnterEmail: "Please enter your email address",
+    noAccountFound: "No account found with this email address. Please check and try again.",
+    failedToSendCode: "Failed to send reset code. Please try again.",
+    resetCodeSent: "Reset code sent successfully! Redirecting to verification...",
+    sending: "Sending...",
+    codeSent: "Code Sent!",
+
+    // ResetPassword
+    invalidResetLink: "Invalid reset password link. Please request a new password reset.",
+    pleaseEnterBothPasswords: "Please enter both password fields",
+    passwordsDoNotMatch: "Passwords do not match",
+    emailMissing: "Email is missing. Please request a new password reset.",
+    passwordResetSuccess: "Password reset successfully! Redirecting to login...",
+    updating: "Updating...",
+    success: "Success!",
   },
   ar: {
     // Common
@@ -72,6 +124,8 @@ export const translations = {
     signIn: "تسجيل الدخول",
     notRegistered: "لست مسجلاً؟",
     signUp: "إنشاء حساب",
+    signInToContinue: "تسجيل الدخول للمتابعة",
+    wantsToAccessYourAccount: "يرغب في الوصول إلى حساب Poswize الخاص بك",
 
     // Signup specific
     fullName: "الاسم الكامل",
@@ -96,12 +150,12 @@ export const translations = {
 
     // OTP
     otpTitle: "أدخل رمز التحقق",
-    otpSubtitlePrefix: "قمنا بإرسال رمز مكون من 6 أرقام إلى",
+    otpSubtitlePrefix: "قمنا بإرسال رمز مكون من 4 أرقام إلى",
     otpDidntReceive: "لم يصلك الرمز؟",
     otpResend: "إعادة الإرسال",
     otpVerify: "تحقق",
     otpChangeEmail: "تغيير البريد الإلكتروني",
-    otpCodePlaceholder: "أدخل الرمز المكون من 6 أرقام",
+    otpCodePlaceholder: "أدخل الرمز المكون من 4 أرقام",
 
     // Reset password
     resetNewPasswordTitle: "إنشاء كلمة مرور جديدة",
@@ -109,6 +163,56 @@ export const translations = {
     newPassword: "كلمة المرور الجديدة",
     confirmNewPassword: "تأكيد كلمة المرور الجديدة",
     updatePassword: "تحديث كلمة المرور",
+
+    // OAuth Consent
+    hi: "مرحباً",
+    user: "مستخدم",
+    authorizationRequest: "طلب تفويض",
+    wouldLikeAccess: "يرغب في الوصول إلى حساب Poswize الخاص بك",
+    thisAppWillBeAbleTo: "سيتمكن هذا التطبيق من:",
+    accessYourName: "الوصول إلى اسمك",
+    accessYourEmail: "الوصول إلى عنوان بريدك الإلكتروني",
+    accessYourPhoto: "الوصول إلى صورة ملفك الشخصي",
+    securityNotice: "تنبيه أمني:",
+    onlyApproveIfTrust: "قم بالموافقة فقط إذا كنت تثق في",
+    andInitiatedRequest: "وبدأت هذا الطلب.",
+    allowAccess: "السماح بالوصول",
+    cancel: "إلغاء",
+    revokeAccessNotice: "يمكنك إلغاء الوصول في أي وقت من إعدادات حسابك.",
+    appDomain: "نطاق التطبيق:",
+    processing: "جاري المعالجة...",
+    loadingConsentInfo: "جاري تحميل معلومات الموافقة...",
+    invalidConsentRequest: "طلب موافقة غير صالح. معاملات مطلوبة مفقودة.",
+
+    // OAuth Signup
+    completeRegistration: "إكمال التسجيل",
+    chooseUsername: "اختر اسم مستخدم لحسابك",
+    username: "اسم المستخدم",
+    completeSignup: "إكمال التسجيل",
+    registrationComplete: "اكتمل التسجيل!",
+    redirectingOAuth: "جاري إعادة التوجيه لإكمال عملية المصادقة...",
+    loadingRegistrationInfo: "جاري تحميل معلومات التسجيل...",
+    invalidOAuthRequest: "طلب تسجيل OAuth غير صالح. معاملات مطلوبة مفقودة.",
+    pleaseEnterUsername: "الرجاء إدخال اسم المستخدم",
+    registrationFailed: "فشل التسجيل. يرجى المحاولة مرة أخرى.",
+    completing: "جاري الإكمال...",
+
+    // ForgetPassword
+    pleaseEnterEmail: "الرجاء إدخال عنوان بريدك الإلكتروني",
+    noAccountFound: "لم يتم العثور على حساب بهذا البريد الإلكتروني. يرجى التحقق والمحاولة مرة أخرى.",
+    failedToSendCode: "فشل إرسال رمز إعادة التعيين. يرجى المحاولة مرة أخرى.",
+    resetCodeSent: "تم إرسال رمز إعادة التعيين بنجاح! جاري التوجيه للتحقق...",
+    sending: "جاري الإرسال...",
+    codeSent: "تم الإرسال!",
+
+    // ResetPassword
+    invalidResetLink: "رابط إعادة تعيين كلمة المرور غير صالح. يرجى طلب إعادة تعيين جديدة.",
+    pleaseEnterBothPasswords: "الرجاء إدخال حقلي كلمة المرور",
+    passwordsDoNotMatch: "كلمات المرور غير متطابقة",
+    emailMissing: "البريد الإلكتروني مفقود. يرجى طلب إعادة تعيين كلمة المرور جديدة.",
+    passwordResetSuccess: "تم إعادة تعيين كلمة المرور بنجاح! جاري التوجيه لتسجيل الدخول...",
+    updating: "جاري التحديث...",
+    success: "نجح!",
   },
 };
 
