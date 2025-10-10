@@ -58,16 +58,33 @@ export default function Signup() {
   }
 
   async function handlePrimarySignUp() {
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (!agreeToTerms) {
-      setError("Please agree to terms and conditions");
+    // Validate all required fields
+    if (!fullName.trim()) {
+      setError(t.pleaseEnterName || "Please enter your full name");
       return;
     }
     if (!username.trim()) {
-      setError("Please enter a username");
+      setError(t.pleaseEnterUsername || "Please enter a username");
+      return;
+    }
+    if (!email.trim()) {
+      setError(t.pleaseEnterEmail || "Please enter your email address");
+      return;
+    }
+    if (!password.trim()) {
+      setError(t.pleaseEnterPassword || "Please enter a password");
+      return;
+    }
+    if (!confirmPassword.trim()) {
+      setError(t.pleaseConfirmPassword || "Please confirm your password");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError(t.passwordsDoNotMatch || "Passwords do not match");
+      return;
+    }
+    if (!agreeToTerms) {
+      setError(t.pleaseAgreeToTerms || "Please agree to terms and conditions");
       return;
     }
     
@@ -141,6 +158,7 @@ export default function Signup() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               isRTL={isRTL}
+              required
             />
 
             <Input
@@ -150,6 +168,7 @@ export default function Signup() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               isRTL={isRTL}
+              required
             />
 
             <Input
@@ -159,6 +178,7 @@ export default function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               isRTL={isRTL}
+              required
             />
 
             <div className="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-[#20ABF0]/20 transition">
@@ -172,6 +192,7 @@ export default function Signup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 dir={isRTL ? "rtl" : "ltr"}
+                required
               />
               <button
                 type="button"
@@ -194,6 +215,7 @@ export default function Signup() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 dir={isRTL ? "rtl" : "ltr"}
+                required
               />
               <button
                 type="button"
@@ -234,7 +256,19 @@ export default function Signup() {
               </div>
             )}
 
-            <Button primary onClick={handlePrimarySignUp} disabled={loading}>
+            <Button 
+              primary 
+              onClick={handlePrimarySignUp} 
+              disabled={
+                loading || 
+                !fullName.trim() || 
+                !username.trim() || 
+                !email.trim() || 
+                !password.trim() || 
+                !confirmPassword.trim() || 
+                !agreeToTerms
+              }
+            >
               {loading ? "Creating account..." : t.signUp}
             </Button>
           </div>
