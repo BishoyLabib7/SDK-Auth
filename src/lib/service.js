@@ -1,5 +1,21 @@
-// API base URL - will be set by the backend
-const API_BASE_URL = window.__API_BASE_URL__ || '';
+// API base URL - from Vite environment variable (VITE_API_BASE_URL)
+// Falls back to window.__API_BASE_URL__ (injected by backend in production)
+// Finally falls back to current origin
+const getApiBaseUrl = () => {
+  // Priority 1: Vite environment variable (set during build)
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // Priority 2: Injected by backend (for production when served by NestJS)
+  if (window.__API_BASE_URL__) {
+    return window.__API_BASE_URL__;
+  }
+  // Priority 3: Current origin (fallback)
+  return window.location.origin;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+console.log('Using API_BASE_URL:', API_BASE_URL);
 
 // Helper function to make API calls
 async function apiCall(endpoint, options = {}) {
