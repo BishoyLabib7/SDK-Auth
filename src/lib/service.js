@@ -1,21 +1,32 @@
 // API base URL - from Vite environment variable (VITE_API_BASE_URL)
-// Falls back to window.__API_BASE_URL__ (injected by backend in production)
-// Finally falls back to current origin
+// Falls back to deriving from current window location
 const getApiBaseUrl = () => {
   // Priority 1: Vite environment variable (set during build)
   if (import.meta.env.VITE_API_BASE_URL) {
+    console.log('Using VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
     return import.meta.env.VITE_API_BASE_URL;
   }
-  // Priority 2: Injected by backend (for production when served by NestJS)
-  if (window.__API_BASE_URL__) {
-    return window.__API_BASE_URL__;
+  
+  // Priority 2: Derive from current URL
+  // If we're on https://poswize.com/testAPI/oauth-ui/..., extract https://poswize.com/testAPI
+  const currentPath = window.location.pathname;
+  const origin = window.location.origin;
+  
+  // Check if we're under /testAPI/ or similar API path
+  const apiPathMatch = currentPath.match(/^(\/[^\/]+)\/oauth-ui/);
+  if (apiPathMatch) {
+    const apiPath = apiPathMatch[1]; // e.g., "/testAPI"
+    const fullApiUrl = `${origin}${apiPath}`;
+    console.log('Derived API_BASE_URL from path:', fullApiUrl);
+    return fullApiUrl;
   }
-  // Priority 3: Current origin (fallback)
-  return window.location.origin;
+  
+  // Priority 3: Just use origin (for localhost development)
+  console.log('Using window.location.origin:', origin);
+  return origin;
 };
 
 const API_BASE_URL = getApiBaseUrl();
-console.log('Using API_BASE_URL:', API_BASE_URL);
 
 // Helper function to make API calls
 async function apiCall(endpoint, options = {}) {
