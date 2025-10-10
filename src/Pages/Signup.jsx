@@ -95,13 +95,25 @@ export default function Signup() {
       initializeFirebaseIfNeeded();
       await signUpWithEmailPassword(fullName, username, email, password);
       
+      // Get the correct base path for OAuth UI
+      const getBasePath = () => {
+        const pathname = window.location.pathname;
+        const match = pathname.match(/^(\/[^\/]+\/oauth-ui)/);
+        if (match) {
+          return match[1]; // e.g., "/testAPI/oauth-ui"
+        }
+        return '/oauth-ui'; // Default for localhost
+      };
+      
+      const basePath = getBasePath();
+      
       // After successful signup, redirect to login page
       if (redirectUri) {
         // If in OAuth flow, redirect to login with redirect_uri
-        window.location.href = `/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+        window.location.href = `${basePath}/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
       } else {
         // If not in OAuth flow, redirect to standalone login
-        window.location.href = '/login';
+        window.location.href = `${basePath}/standalone-login`;
       }
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
