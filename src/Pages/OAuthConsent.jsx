@@ -48,8 +48,30 @@ export default function OAuthConsent() {
     setError("");
 
     try {
-      // Use API_BASE_URL from window global or empty string for relative path
-      const API_BASE_URL = window.__API_BASE_URL__ || '';
+      // Get API base URL using same logic as service.js
+      const getApiBaseUrl = () => {
+        // Priority 1: Vite environment variable (set during build)
+        if (import.meta.env.VITE_API_BASE_URL) {
+          return import.meta.env.VITE_API_BASE_URL;
+        }
+        
+        // Priority 2: Derive from current URL
+        // If we're on https://poswize.com/testAPI/oauth-ui/..., extract https://poswize.com/testAPI
+        const currentPath = window.location.pathname;
+        const origin = window.location.origin;
+        
+        // Check if we're under /testAPI/ or similar API path
+        const apiPathMatch = currentPath.match(/^(\/[^\/]+)\/oauth-ui/);
+        if (apiPathMatch) {
+          const apiPath = apiPathMatch[1]; // e.g., "/testAPI"
+          return `${origin}${apiPath}`;
+        }
+        
+        // Priority 3: Just use origin (for localhost development)
+        return origin;
+      };
+
+      const API_BASE_URL = getApiBaseUrl();
       
       // Create form to submit (backend expects form data and performs redirect)
       const form = document.createElement('form');
