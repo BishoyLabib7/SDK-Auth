@@ -14,10 +14,22 @@ import ResetPassword from "./Pages/ResetPassword";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 export default function App() {
+  // Dynamically determine basename from current URL
+  const getBasename = () => {
+    const pathname = window.location.pathname;
+    // If we're on /testAPI/oauth-ui/..., use /testAPI/oauth-ui as basename
+    const match = pathname.match(/^(\/[^\/]+\/oauth-ui)/);
+    if (match) {
+      return match[1]; // e.g., "/testAPI/oauth-ui"
+    }
+    // Default to /oauth-ui for localhost
+    return '/oauth-ui';
+  };
+
   return (
     <TranslationProvider>
       <LanguageTransition>
-        <BrowserRouter basename="/oauth-ui">
+        <BrowserRouter basename={getBasename()}>
           <Routes>
             <Route path="/login" element={<OAuthLogin />} />
             <Route path="/consent" element={<OAuthConsent />} />

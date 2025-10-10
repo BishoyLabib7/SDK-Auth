@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(),tailwindcss()],
-  base: '/oauth-ui/',
+  base: './', // Use relative paths to work with any base URL
   build: {
     outDir: 'dist/oauth-ui',
     emptyOutDir: true,
