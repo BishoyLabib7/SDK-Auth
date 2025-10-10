@@ -99,11 +99,12 @@ export async function loginWithApple() {
   window.location.href = `${API_BASE_URL}/Auth/apple?state=${encodeURIComponent(redirectUri)}`;
 }
 
-export async function signUpWithEmailPassword(fullName, email, password) {
+export async function signUpWithEmailPassword(fullName, username, email, password) {
   return apiCall('/Auth/signUp', {
     method: 'POST',
     body: JSON.stringify({
       name: fullName,
+      username,
       email,
       password,
     }),

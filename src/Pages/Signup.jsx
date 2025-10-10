@@ -22,6 +22,7 @@ export default function Signup() {
 
   // State
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -65,13 +66,17 @@ export default function Signup() {
       setError("Please agree to terms and conditions");
       return;
     }
+    if (!username.trim()) {
+      setError("Please enter a username");
+      return;
+    }
     
     setLoading(true);
     setError("");
     
     try {
       initializeFirebaseIfNeeded();
-      await signUpWithEmailPassword(fullName, email, password);
+      await signUpWithEmailPassword(fullName, username, email, password);
       
       // After successful signup, redirect to login page
       if (redirectUri) {
@@ -135,6 +140,15 @@ export default function Signup() {
               placeholder={t.fullName}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              isRTL={isRTL}
+            />
+
+            <Input
+              type="text"
+              icon={<IoPerson />}
+              placeholder={t.username}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               isRTL={isRTL}
             />
 
