@@ -81,21 +81,27 @@ export default function VerifySignupOTP() {
       sessionStorage.removeItem('signup_email');
       sessionStorage.removeItem('signup_redirect_uri');
       
-      // If there's a redirect_uri (OAuth flow), redirect to login with it
-      // The login flow will check if user is authenticated and redirect to consent
+      // If there's a redirect_uri (OAuth flow), redirect to backend authorize with token
       if (redirectUri) {
-        // Get base path
-        const getBasePath = () => {
-          const pathname = window.location.pathname;
-          const match = pathname.match(/^(\/[^\/]+\/oauth-ui)/);
-          if (match) {
-            return match[1];
+        // Get API base URL
+        const getApiBaseUrl = () => {
+          if (import.meta.env.VITE_API_BASE_URL) {
+            return import.meta.env.VITE_API_BASE_URL;
           }
-          return '/oauth-ui';
+          const currentPath = window.location.pathname;
+          const origin = window.location.origin;
+          const apiPathMatch = currentPath.match(/^(\/[^\/]+)\/oauth-ui/);
+          if (apiPathMatch) {
+            return `${origin}${apiPathMatch[1]}`;
+          }
+          return origin;
         };
         
-        const basePath = getBasePath();
-        window.location.href = `${basePath}/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+        const apiBaseUrl = getApiBaseUrl();
+        
+        // Redirect to backend OAuth authorize with token
+        // Backend will handle consent check and redirect appropriately
+        window.location.href = `${apiBaseUrl}/oauth/authorize?response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=poswize-client&token=${encodeURIComponent(response.token)}`;
       } else {
         // If not in OAuth flow, redirect to standalone login success or home
         navigate('/standalone-login');
