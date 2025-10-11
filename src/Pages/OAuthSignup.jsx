@@ -66,11 +66,32 @@ export default function OAuthSignup() {
       });
 
       setSuccess(true);
-      // Redirect to OAuth consent page with proper parameters
-      const appName = new URL(redirectUri).hostname;
-      const consentUrl = `/oauth-ui/consent?redirect_uri=${encodeURIComponent(redirectUri)}&appName=${encodeURIComponent(appName)}&userName=${encodeURIComponent(oauthData.name)}&userEmail=${encodeURIComponent(oauthData.email)}&userPhoto=${encodeURIComponent('https://postbet.com/default-avatar.png')}`;
+      
+      // Store token from registration
+      if (result.token) {
+        localStorage.setItem('auth_token', result.token);
+      }
+      
+      // Get API base URL
+      const getApiBaseUrl = () => {
+        if (import.meta.env.VITE_API_BASE_URL) {
+          return import.meta.env.VITE_API_BASE_URL;
+        }
+        const currentPath = window.location.pathname;
+        const origin = window.location.origin;
+        const apiPathMatch = currentPath.match(/^(\/[^\/]+)\/oauth-ui/);
+        if (apiPathMatch) {
+          return `${origin}${apiPathMatch[1]}`;
+        }
+        return origin;
+      };
+      
+      const apiBaseUrl = getApiBaseUrl();
+      
+      // Redirect to backend OAuth authorize with token
+      // Backend will check consent and redirect appropriately
       setTimeout(() => {
-        window.location.href = consentUrl;
+        window.location.href = `${apiBaseUrl}/oauth/authorize?response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=poswize-client&token=${encodeURIComponent(result.token)}`;
       }, 2000);
     } catch (err) {
       setError(err.message || t.registrationFailed);
