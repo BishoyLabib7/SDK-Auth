@@ -98,36 +98,46 @@ export async function loginWithGoogle() {
     
     // Wait for popup to complete
     return new Promise((resolve, reject) => {
-      let popupClosedByUser = false;
+      let messageReceived = false;
+      let timeoutId = null;
       
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed);
-          popupClosedByUser = true;
-          // Don't reject immediately, wait a bit to see if we get a message
-          setTimeout(() => {
-            if (popupClosedByUser) {
+      // Set a timeout to handle cases where popup is closed without message
+      timeoutId = setTimeout(() => {
+        if (!messageReceived) {
+          try {
+            // Try to check if popup is closed (may fail due to COOP policy)
+            if (popup.closed) {
               reject(new Error('OAuth popup was closed'));
             }
-          }, 1000);
+          } catch (e) {
+            // COOP policy blocks access to popup.closed
+            // In this case, we'll wait longer and assume popup is still open
+            console.warn('Cannot check popup.closed due to COOP policy, continuing to wait...');
+          }
         }
-      }, 1000);
+      }, 30000); // 30 second timeout
       
       // Listen for message from popup
       const messageHandler = (event) => {
         if (event.origin !== API_BASE_URL) return;
         
-        popupClosedByUser = false; // We got a message, so it wasn't closed by user
+        messageReceived = true; // Mark that we received a message
+        if (timeoutId) clearTimeout(timeoutId);
+        window.removeEventListener('message', messageHandler);
         
         if (event.data.type === 'OAUTH_SUCCESS') {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', messageHandler);
-          popup.close();
+          try {
+            popup.close();
+          } catch (e) {
+            // Ignore errors when closing popup
+          }
           resolve(event.data.data);
         } else if (event.data.type === 'OAUTH_ERROR') {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', messageHandler);
-          popup.close();
+          try {
+            popup.close();
+          } catch (e) {
+            // Ignore errors when closing popup
+          }
           reject(new Error(event.data.error));
         }
       };
@@ -154,36 +164,46 @@ export async function loginWithApple() {
     
     // Wait for popup to complete
     return new Promise((resolve, reject) => {
-      let popupClosedByUser = false;
+      let messageReceived = false;
+      let timeoutId = null;
       
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed);
-          popupClosedByUser = true;
-          // Don't reject immediately, wait a bit to see if we get a message
-          setTimeout(() => {
-            if (popupClosedByUser) {
+      // Set a timeout to handle cases where popup is closed without message
+      timeoutId = setTimeout(() => {
+        if (!messageReceived) {
+          try {
+            // Try to check if popup is closed (may fail due to COOP policy)
+            if (popup.closed) {
               reject(new Error('OAuth popup was closed'));
             }
-          }, 1000);
+          } catch (e) {
+            // COOP policy blocks access to popup.closed
+            // In this case, we'll wait longer and assume popup is still open
+            console.warn('Cannot check popup.closed due to COOP policy, continuing to wait...');
+          }
         }
-      }, 1000);
+      }, 30000); // 30 second timeout
       
       // Listen for message from popup
       const messageHandler = (event) => {
         if (event.origin !== API_BASE_URL) return;
         
-        popupClosedByUser = false; // We got a message, so it wasn't closed by user
+        messageReceived = true; // Mark that we received a message
+        if (timeoutId) clearTimeout(timeoutId);
+        window.removeEventListener('message', messageHandler);
         
         if (event.data.type === 'OAUTH_SUCCESS') {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', messageHandler);
-          popup.close();
+          try {
+            popup.close();
+          } catch (e) {
+            // Ignore errors when closing popup
+          }
           resolve(event.data.data);
         } else if (event.data.type === 'OAUTH_ERROR') {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', messageHandler);
-          popup.close();
+          try {
+            popup.close();
+          } catch (e) {
+            // Ignore errors when closing popup
+          }
           reject(new Error(event.data.error));
         }
       };
