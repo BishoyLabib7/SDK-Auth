@@ -88,7 +88,55 @@ export async function loginWithGoogle() {
   const urlParams = new URLSearchParams(window.location.search);
   const redirectUri = urlParams.get('redirect_uri') || 'http://localhost:3001/auth/poswize/callback';
   
-  window.location.href = `${API_BASE_URL}/Auth/google?state=${encodeURIComponent(redirectUri)}`;
+  try {
+    // Use popup window for OAuth flow
+    const popup = window.open(
+      `${API_BASE_URL}/Auth/google?state=${encodeURIComponent(redirectUri)}`,
+      'google-oauth',
+      'width=500,height=600,scrollbars=yes,resizable=yes'
+    );
+    
+    // Wait for popup to complete
+    return new Promise((resolve, reject) => {
+      let popupClosedByUser = false;
+      
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          popupClosedByUser = true;
+          // Don't reject immediately, wait a bit to see if we get a message
+          setTimeout(() => {
+            if (popupClosedByUser) {
+              reject(new Error('OAuth popup was closed'));
+            }
+          }, 1000);
+        }
+      }, 1000);
+      
+      // Listen for message from popup
+      const messageHandler = (event) => {
+        if (event.origin !== API_BASE_URL) return;
+        
+        popupClosedByUser = false; // We got a message, so it wasn't closed by user
+        
+        if (event.data.type === 'OAUTH_SUCCESS') {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+          resolve(event.data.data);
+        } else if (event.data.type === 'OAUTH_ERROR') {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+          reject(new Error(event.data.error));
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+    });
+  } catch (error) {
+    throw new Error(`Google OAuth failed: ${error.message}`);
+  }
 }
 
 export async function loginWithApple() {
@@ -96,7 +144,55 @@ export async function loginWithApple() {
   const urlParams = new URLSearchParams(window.location.search);
   const redirectUri = urlParams.get('redirect_uri') || 'http://localhost:3001/auth/poswize/callback';
   
-  window.location.href = `${API_BASE_URL}/Auth/apple?state=${encodeURIComponent(redirectUri)}`;
+  try {
+    // Use popup window for OAuth flow
+    const popup = window.open(
+      `${API_BASE_URL}/Auth/apple?state=${encodeURIComponent(redirectUri)}`,
+      'apple-oauth',
+      'width=500,height=600,scrollbars=yes,resizable=yes'
+    );
+    
+    // Wait for popup to complete
+    return new Promise((resolve, reject) => {
+      let popupClosedByUser = false;
+      
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          popupClosedByUser = true;
+          // Don't reject immediately, wait a bit to see if we get a message
+          setTimeout(() => {
+            if (popupClosedByUser) {
+              reject(new Error('OAuth popup was closed'));
+            }
+          }, 1000);
+        }
+      }, 1000);
+      
+      // Listen for message from popup
+      const messageHandler = (event) => {
+        if (event.origin !== API_BASE_URL) return;
+        
+        popupClosedByUser = false; // We got a message, so it wasn't closed by user
+        
+        if (event.data.type === 'OAUTH_SUCCESS') {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+          resolve(event.data.data);
+        } else if (event.data.type === 'OAUTH_ERROR') {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+          reject(new Error(event.data.error));
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+    });
+  } catch (error) {
+    throw new Error(`Apple OAuth failed: ${error.message}`);
+  }
 }
 
 export async function signUpWithEmailPassword(fullName, username, email, password) {

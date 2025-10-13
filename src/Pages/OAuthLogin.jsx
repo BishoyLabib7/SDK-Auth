@@ -29,6 +29,20 @@ export default function OAuthLogin() {
   // Get URL parameters
   const [urlParams, setUrlParams] = useState({});
 
+  // Helper function to get API base URL
+  const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL;
+    }
+    const currentPath = window.location.pathname;
+    const origin = window.location.origin;
+    const apiPathMatch = currentPath.match(/^(\/[^\/]+)\/oauth-ui/);
+    if (apiPathMatch) {
+      return `${origin}${apiPathMatch[1]}`;
+    }
+    return origin;
+  };
+
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
@@ -102,14 +116,76 @@ export default function OAuthLogin() {
     }
   }
 
-  function handleGoogleSignIn() {
-    initializeFirebaseIfNeeded();
-    loginWithGoogle();
+  async function handleGoogleSignIn() {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const result = await loginWithGoogle();
+      
+      if (result.isNewUser) {
+        // New user - redirect to signup page
+        const signupUrl = `/complete-registration?provider=google&email=${encodeURIComponent(result.email)}&name=${encodeURIComponent(result.name)}&providerId=${encodeURIComponent(result.providerId)}&redirect_uri=${encodeURIComponent(result.redirectUri)}`;
+        window.location.href = signupUrl;
+      } else {
+        // Existing user - store token and continue OAuth flow
+        if (result.token) {
+          localStorage.setItem('auth_token', result.token);
+        }
+        
+        // Continue with OAuth flow
+        const apiBaseUrl = getApiBaseUrl();
+        const redirectUri = urlParams.redirectUri || 'http://localhost:3001/auth/poswize/callback';
+        window.location.href = `${apiBaseUrl}/oauth/authorize?response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=poswize-client&token=${encodeURIComponent(result.token)}`;
+      }
+    } catch (error) {
+      setError(error.message || "Google login failed. Please try again.");
+      
+      // Auto-clear error message after 5 seconds
+      if (error.message === 'OAuth popup was closed') {
+        setTimeout(() => {
+          setError("");
+        }, 5000);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleAppleSignIn() {
-    initializeFirebaseIfNeeded();
-    loginWithApple();
+  async function handleAppleSignIn() {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const result = await loginWithApple();
+      
+      if (result.isNewUser) {
+        // New user - redirect to signup page
+        const signupUrl = `/complete-registration?provider=apple&email=${encodeURIComponent(result.email)}&name=${encodeURIComponent(result.name)}&providerId=${encodeURIComponent(result.providerId)}&redirect_uri=${encodeURIComponent(result.redirectUri)}`;
+        window.location.href = signupUrl;
+      } else {
+        // Existing user - store token and continue OAuth flow
+        if (result.token) {
+          localStorage.setItem('auth_token', result.token);
+        }
+        
+        // Continue with OAuth flow
+        const apiBaseUrl = getApiBaseUrl();
+        const redirectUri = urlParams.redirectUri || 'http://localhost:3001/auth/poswize/callback';
+        window.location.href = `${apiBaseUrl}/oauth/authorize?response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=poswize-client&token=${encodeURIComponent(result.token)}`;
+      }
+    } catch (error) {
+      setError(error.message || "Apple login failed. Please try again.");
+      
+      // Auto-clear error message after 5 seconds
+      if (error.message === 'OAuth popup was closed') {
+        setTimeout(() => {
+          setError("");
+        }, 5000);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
