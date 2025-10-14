@@ -14,7 +14,7 @@ export default defineConfig({
       },
     },
   },
-  base: '/oauth/',
+  base: '/testAPI/oauth/',
   define: {
     'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || ''),
   },

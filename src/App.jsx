@@ -16,7 +16,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 export default function App() {
   // Use basename only in production (when served by backend)
   // In development (Vite dev server), no basename is needed
-  const basename = import.meta.env.MODE === 'production' ? '/oauth' : '';
+  const basename = import.meta.env.MODE === 'production' ? '/testAPI/oauth' : '';
   
   return (
     <TranslationProvider>
