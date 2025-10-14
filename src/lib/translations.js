@@ -2,6 +2,7 @@ export const translations = {
   en: {
     // Common
     continueWith: "Continue with",
+    orContinueWith: "Or continue with",
     orContinueWithEmail: "or Continue with Email",
     google: "Google",
     apple: "Apple",
@@ -19,6 +20,7 @@ export const translations = {
 
     // Signup specific
     fullName: "Full Name",
+    username: "Username",
     confirmPassword: "Confirm Password",
     agreeToTerms: "I agree to the Terms and Conditions",
     alreadyRegistered: "Already have an account?",
@@ -54,10 +56,43 @@ export const translations = {
     newPassword: "New password",
     confirmNewPassword: "Confirm new password",
     updatePassword: "Update password",
+
+    // OAuth Consent
+    consentTitle: "Authorization Request",
+    consentSubtitle: "An application is requesting access to your account",
+    consentAppMessage: "is requesting access to your Poswize account",
+    permissionsTitle: "This application will be able to:",
+    allowAccess: "Allow Access",
+    denyAccess: "Deny",
+    processing: "Processing...",
+    loading: "Loading...",
+    invalidConsentToken: "Invalid or missing consent token",
+    sessionExpired: "Session expired. Please try again.",
+    consentFailed: "Failed to process consent",
+    invalidRequest: "Invalid request",
+    errorTitle: "Error",
+    consentPrivacyNotice:
+      "By allowing access, you agree to share your information with this application",
+
+    // OAuth Username Selection
+    usernameSelectionTitle: "Choose Your Username",
+    usernameSelectionSubtitle: "Complete your registration by choosing a unique username",
+    username: "Username",
+    usernamePlaceholder: "Enter your username",
+    signedInWith: "Signed in with",
+    continueButton: "Continue",
+    usernamePrivacyNotice: "Your username will be visible to other users",
+    invalidRegistrationToken: "Invalid or missing registration token",
+    usernameChecking: "Checking availability...",
+    usernameAvailable: "Username is available",
+    usernameTaken: "Username is already taken",
+    usernameInvalid: "Username must be 3-20 characters, letters, numbers, and underscores only",
+    registrationFailed: "Failed to complete registration",
   },
   ar: {
     // Common
     continueWith: "تسجيل الدخول بواسطة",
+    orContinueWith: "أو المتابعة بواسطة",
     orContinueWithEmail: "أو المتابعة عبر البريد الإلكتروني",
     google: "Google",
     apple: "Apple",
@@ -75,6 +110,7 @@ export const translations = {
 
     // Signup specific
     fullName: "الاسم الكامل",
+    username: "اسم المستخدم",
     confirmPassword: "تأكيد كلمة المرور",
     agreeToTerms: "أوافق على الشروط والأحكام",
     alreadyRegistered: "لديك حساب بالفعل؟",
@@ -109,6 +145,38 @@ export const translations = {
     newPassword: "كلمة المرور الجديدة",
     confirmNewPassword: "تأكيد كلمة المرور الجديدة",
     updatePassword: "تحديث كلمة المرور",
+
+    // OAuth Consent
+    consentTitle: "طلب تفويض",
+    consentSubtitle: "يطلب تطبيق الوصول إلى حسابك",
+    consentAppMessage: "يطلب الوصول إلى حساب Poswize الخاص بك",
+    permissionsTitle: "سيتمكن هذا التطبيق من:",
+    allowAccess: "السماح بالوصول",
+    denyAccess: "رفض",
+    processing: "جاري المعالجة...",
+    loading: "جاري التحميل...",
+    invalidConsentToken: "رمز موافقة غير صالح أو مفقود",
+    sessionExpired: "انتهت صلاحية الجلسة. يرجى المحاولة مرة أخرى.",
+    consentFailed: "فشلت معالجة الموافقة",
+    invalidRequest: "طلب غير صالح",
+    errorTitle: "خطأ",
+    consentPrivacyNotice:
+      "من خلال السماح بالوصول، فإنك توافق على مشاركة معلوماتك مع هذا التطبيق",
+
+    // OAuth Username Selection
+    usernameSelectionTitle: "اختر اسم المستخدم",
+    usernameSelectionSubtitle: "أكمل التسجيل باختيار اسم مستخدم فريد",
+    username: "اسم المستخدم",
+    usernamePlaceholder: "أدخل اسم المستخدم",
+    signedInWith: "تم تسجيل الدخول بواسطة",
+    continueButton: "متابعة",
+    usernamePrivacyNotice: "سيكون اسم المستخدم الخاص بك مرئيًا للمستخدمين الآخرين",
+    invalidRegistrationToken: "رمز التسجيل غير صالح أو مفقود",
+    usernameChecking: "جاري التحقق من التوفر...",
+    usernameAvailable: "اسم المستخدم متاح",
+    usernameTaken: "اسم المستخدم مستخدم بالفعل",
+    usernameInvalid: "يجب أن يكون اسم المستخدم من 3-20 حرفًا، أحرف وأرقام وشرطات سفلية فقط",
+    registrationFailed: "فشل إكمال التسجيل",
   },
 };
 

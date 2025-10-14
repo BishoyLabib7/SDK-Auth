@@ -9,25 +9,42 @@ import { FaLock } from "react-icons/fa";
 import Logo from "../assets/logo.png";
 import Footer from "../UI/Footer";
 import { useTranslation } from "../contexts/TranslationContext";
+import { useOAuthContext } from "../contexts/OAuthContext";
 import {
   loginWithEmailPassword,
   loginWithGoogle,
   loginWithApple,
+  authenticateForOAuth,
+  initiateGoogleOAuth,
+  initiateAppleOAuth,
 } from "../lib/service";
-import { Link, Links } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Login() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
+  const { oauthContext, loading: loadingOAuthContext, error: oauthError } = useOAuthContext();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRemembered, setIsRemembered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
   }, [entered]);
+
+  // Set OAuth error if present
+  useEffect(() => {
+    if (oauthError) {
+      setError(oauthError);
+    }
+  }, [oauthError]);
 
   function initializeFirebaseIfNeeded() {
     const globals = typeof window !== "undefined" ? window : {};
@@ -42,18 +59,66 @@ export default function Login() {
   }
 
   async function handlePrimarySignIn() {
-    initializeFirebaseIfNeeded();
-    await loginWithEmailPassword(email, password, isRemembered);
+    setError(null);
+    setLoading(true);
+
+    try {
+      // Check if we're in OAuth flow
+      if (oauthContext) {
+        // Use OAuth authentication endpoint
+        const result = await authenticateForOAuth(
+          'login',
+          email,
+          password,
+          oauthContext.redirectUri
+        );
+
+        if (result.success) {
+          if (result.alreadyConsented && result.redirectUrl) {
+            // User already consented, redirect directly to app
+            window.location.href = result.redirectUrl;
+          } else if (result.consentToken) {
+            // Navigate to consent page with token
+            navigate(`/consent?consent_token=${result.consentToken}`);
+          }
+        } else {
+          setError(result.error || 'Login failed. Please try again.');
+        }
+      } else {
+        // Regular login flow (non-OAuth)
+        initializeFirebaseIfNeeded();
+        await loginWithEmailPassword(email, password, isRemembered);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message || 'An error occurred during login. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleGoogleSignIn() {
-    initializeFirebaseIfNeeded();
-    loginWithGoogle();
+    if (oauthContext) {
+      // OAuth flow: redirect to Google with OAuth context
+      const googleUrl = initiateGoogleOAuth(oauthContext.redirectUri, oauthContext.state);
+      window.location.href = googleUrl;
+    } else {
+      // Regular flow
+      initializeFirebaseIfNeeded();
+      loginWithGoogle();
+    }
   }
 
   function handleAppleSignIn() {
-    initializeFirebaseIfNeeded();
-    loginWithApple();
+    if (oauthContext) {
+      // OAuth flow: redirect to Apple with OAuth context
+      const appleUrl = initiateAppleOAuth(oauthContext.redirectUri, oauthContext.state);
+      window.location.href = appleUrl;
+    } else {
+      // Regular flow
+      initializeFirebaseIfNeeded();
+      loginWithApple();
+    }
   }
 
   return (
@@ -86,36 +151,34 @@ export default function Login() {
             className=" mx-auto mb-10 transition-transform duration-300 hover:scale-105"
           />
 
-          <div className="flex justify-center items-center gap-3 my-4">
-            <div className="h-px bg-gray-200 flex-1" />
-            <span className="text-xs text-gray-500 whitespace-nowrap">
-              {t.continueWith}
-            </span>
-            <div className="h-px bg-gray-200 flex-1" />
-          </div>
+          {/* OAuth Context Display */}
+          {oauthContext && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-gray-700 text-center">
+                <span className="font-semibold text-blue-600">{oauthContext.appName}</span>
+                {' '}
+                {language === 'en' 
+                  ? 'is requesting access to your account'
+                  : 'يطلب الوصول إلى حسابك'}
+              </p>
+            </div>
+          )}
 
-          {/* Social logins */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
-            <SocialButton
-              icon={<FcGoogle />}
-              text={t.google}
-              onClick={handleGoogleSignIn}
-            />
-            <SocialButton
-              icon={<ImAppleinc />}
-              text={t.apple}
-              onClick={handleAppleSignIn}
-            />
-          </div>
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-4">
-            <div className="h-px bg-gray-200 flex-1" />
-            <span className="text-xs text-gray-500 whitespace-nowrap">
-              {t.orContinueWithEmail}
-            </span>
-            <div className="h-px bg-gray-200 flex-1" />
-          </div>
+          {/* Loading OAuth Context */}
+          {loadingOAuthContext && (
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+              <p className="text-sm text-gray-600 text-center">
+                {language === 'en' ? 'Loading...' : 'جاري التحميل...'}
+              </p>
+            </div>
+          )}
 
           {/* Inputs */}
           <div className="space-y-3">
@@ -173,16 +236,39 @@ export default function Login() {
 
           {/* Primary action */}
           <div className="mt-10">
-            <Button primary onClick={handlePrimarySignIn}>
-              {t.signIn}
+            <Button primary onClick={handlePrimarySignIn} disabled={loading || loadingOAuthContext}>
+              {loading ? (language === 'en' ? 'Signing in...' : 'جاري تسجيل الدخول...') : t.signIn}
             </Button>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="h-px bg-gray-200 flex-1" />
+            <span className="text-xs text-gray-500 whitespace-nowrap">
+              {t.orContinueWith}
+            </span>
+            <div className="h-px bg-gray-200 flex-1" />
+          </div>
+
+          {/* Social logins */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            <SocialButton
+              icon={<FcGoogle />}
+              text={t.google}
+              onClick={handleGoogleSignIn}
+            />
+            <SocialButton
+              icon={<ImAppleinc />}
+              text={t.apple}
+              onClick={handleAppleSignIn}
+            />
           </div>
 
           {/* Footer */}
           <div className="mt-5 text-center text-sm text-gray-700">
             <span>{t.notRegistered} </span>
             <Link
-              to="/signup"
+              to={oauthContext ? `/signup?${searchParams.toString()}` : "/signup"}
               className="font-medium text-[#20ABF0] underline-offset-4 hover:underline cursor-pointer"
             >
               {t.signUp}
