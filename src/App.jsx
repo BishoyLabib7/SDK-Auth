@@ -14,11 +14,12 @@ import OAuthUsernameSelection from "./Pages/OAuthUsernameSelection";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 export default function App() {
-  // Use different basename for production vs development
-  // Production: served at /testAPI/oauth (with nginx prefix)
-  // Development: served at /oauth (direct from backend)
-  const basename = import.meta.env.MODE === 'production' ? '/testAPI/oauth' : '/oauth';
-  
+  // Auto-detect basename from current URL path
+  // Extracts everything before the route (e.g., /testAPI/oauth from /testAPI/oauth/login)
+  const currentPath = window.location.pathname;
+  const oauthIndex = currentPath.indexOf('/oauth');
+  const basename = oauthIndex !== -1 ? currentPath.substring(0, oauthIndex + 6) : '/oauth';
+
   return (
     <TranslationProvider>
       <LanguageTransition>

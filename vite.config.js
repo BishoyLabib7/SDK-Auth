@@ -4,9 +4,19 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // Use /testAPI/oauth/ for production, /oauth/ for development
-  const base = mode === 'production' ? '/testAPI/oauth/' : '/oauth/';
-  
+  // Derive base from VITE_API_BASE_URL
+  const apiBaseUrl = process.env.VITE_API_BASE_URL || '';
+  let base = '/oauth/';
+  if (apiBaseUrl) {
+    try {
+      const url = new URL(apiBaseUrl);
+      const pathname = url.pathname === '/' ? '' : url.pathname;
+      base = pathname + '/oauth/';
+    } catch (e) {
+      console.warn('Invalid VITE_API_BASE_URL, using default /oauth/');
+    }
+  }
+
   return {
     plugins: [react(), tailwindcss()],
     build: {
