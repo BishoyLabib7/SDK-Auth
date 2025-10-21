@@ -21,7 +21,7 @@ export default function App() {
     <OAuthProvider>
       <TranslationProvider>
         <LanguageTransition>
-          <BrowserRouter>
+          <BrowserRouter basename="/oauth2">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
