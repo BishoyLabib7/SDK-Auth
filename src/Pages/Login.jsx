@@ -14,20 +14,85 @@ import {
   loginWithGoogle,
   loginWithApple,
 } from "../lib/service";
-import { Link, Links } from "react-router-dom";
+import { submitOAuthLogin } from "../lib/oauthService";
+import { useOAuthContext } from "../contexts/OAuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { mapOAuthError } from "../lib/oauthErrorHandler";
 
 export default function Login() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
+  const { setOAuthParams, setConsentData, oauthParams, isInOAuthFlow, clearOAuthContext } = useOAuthContext();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRemembered, setIsRemembered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
-  }, [entered]);
+  }, []); // Empty dependency array - only run once on mount
+
+  // Detect OAuth parameters in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect_uri = urlParams.get('redirect_uri');
+    
+    if (redirect_uri) {
+      // This is an OAuth flow - store parameters
+      // Note: setOAuthParams will generate state if not provided
+      setOAuthParams({
+        redirect_uri,
+        response_type: urlParams.get('response_type') || 'code',
+        scope: urlParams.get('scope') || '',
+        state: urlParams.get('state') || ''
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - setOAuthParams is stable
+
+  // Handle social login callback in OAuth flow
+  useEffect(() => {
+    async function handleSocialOAuthCallback() {
+      // Check if returning from social login with OAuth context
+      const savedOAuthParams = sessionStorage.getItem('oauth_social_flow');
+      
+      if (savedOAuthParams) {
+        try {
+          const params = JSON.parse(savedOAuthParams);
+          
+          // Check if user is now authenticated (social login succeeded)
+          // This would typically be indicated by a session cookie or token
+          // For now, we'll check authorization status
+          const { checkOAuthAuthorization } = await import('../lib/oauthService');
+          const response = await checkOAuthAuthorization(params);
+          
+          if (response.status === 'needs_consent') {
+            // Social login succeeded, show consent screen
+            setConsentData(response);
+            sessionStorage.removeItem('oauth_social_flow');
+            navigate('/oauth/consent');
+          } else if (response.status === 'authorized') {
+            // Has existing consent, redirect immediately
+            sessionStorage.removeItem('oauth_social_flow');
+            // Note: clearOAuthContext is not called here because we're in the middle
+            // of the social login callback. The context will be cleared on the next page load.
+            window.location.href = response.redirect_url;
+          }
+          // If still unauthenticated, social login failed - stay on login page
+        } catch (err) {
+          console.error('Social OAuth callback error:', err);
+          const errorInfo = mapOAuthError(err.message || 'Social login failed', t);
+          setError(errorInfo.message);
+          sessionStorage.removeItem('oauth_social_flow');
+        }
+      }
+    }
+    
+    handleSocialOAuthCallback();
+  }, [setConsentData, navigate, t]);
 
   function initializeFirebaseIfNeeded() {
     const globals = typeof window !== "undefined" ? window : {};
@@ -42,18 +107,68 @@ export default function Login() {
   }
 
   async function handlePrimarySignIn() {
-    initializeFirebaseIfNeeded();
-    await loginWithEmailPassword(email, password, isRemembered);
+    try {
+      setError(""); // Clear any previous errors
+      
+      if (isInOAuthFlow()) {
+        // OAuth flow - use OAuth login endpoint
+        const response = await submitOAuthLogin(email, password, oauthParams);
+        
+        if (response.status === 'success') {
+          // Needs consent - navigate to consent page
+          setConsentData(response);
+          navigate('/oauth/consent');
+        } else if (response.status === 'authorized') {
+          // Has existing consent - clear context and redirect immediately
+          clearOAuthContext();
+          window.location.href = response.redirect_url;
+        } else if (response.status === 'error') {
+          // Display error message with proper mapping
+          const errorInfo = mapOAuthError(response.error_description || 'Login failed', t);
+          setError(errorInfo.message);
+        }
+      } else {
+        // Standard login flow - use existing logic
+        initializeFirebaseIfNeeded();
+        await loginWithEmailPassword(email, password, isRemembered);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      // Map error to user-friendly message
+      const errorInfo = mapOAuthError(err.message || 'Login failed', t);
+      setError(errorInfo.message);
+    }
   }
 
   function handleGoogleSignIn() {
     initializeFirebaseIfNeeded();
-    loginWithGoogle();
+    
+    console.log('Google sign in - isInOAuthFlow:', isInOAuthFlow());
+    console.log('OAuth params:', oauthParams);
+    
+    // If in OAuth flow, preserve OAuth parameters for social login callback
+    if (isInOAuthFlow()) {
+      // Store OAuth params in sessionStorage so they persist through social auth redirect
+      sessionStorage.setItem('oauth_social_flow', JSON.stringify(oauthParams));
+      console.log('Calling loginWithGoogle with OAuth params:', oauthParams);
+      loginWithGoogle(oauthParams);
+    } else {
+      console.log('Calling loginWithGoogle without OAuth params');
+      loginWithGoogle();
+    }
   }
 
   function handleAppleSignIn() {
     initializeFirebaseIfNeeded();
-    loginWithApple();
+    
+    // If in OAuth flow, preserve OAuth parameters for social login callback
+    if (isInOAuthFlow()) {
+      // Store OAuth params in sessionStorage so they persist through social auth redirect
+      sessionStorage.setItem('oauth_social_flow', JSON.stringify(oauthParams));
+      loginWithApple(oauthParams);
+    } else {
+      loginWithApple();
+    }
   }
 
   return (
@@ -170,6 +285,13 @@ export default function Login() {
               {t.forgotPassword}
             </Link>
           </div>
+
+          {/* Error message display */}
+          {error && (
+            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
 
           {/* Primary action */}
           <div className="mt-10">

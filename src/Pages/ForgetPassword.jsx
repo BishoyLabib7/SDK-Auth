@@ -14,11 +14,13 @@ export default function ForgetPassword() {
 
   const [email, setEmail] = useState("");
   const [entered, setEntered] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
-  }, [entered]);
+  }, []); // Empty dependency array - only run once on mount
 
   function initializeFirebaseIfNeeded() {
     const globals = typeof window !== "undefined" ? window : {};
@@ -34,9 +36,21 @@ export default function ForgetPassword() {
 
   const navigate = useNavigate();
   async function handleSendReset() {
-    initializeFirebaseIfNeeded();
-    await sendPasswordResetEmail(email);
-    navigate("/verify-otp");
+    try {
+      setError(""); // Clear previous errors
+      setLoading(true);
+      
+      initializeFirebaseIfNeeded();
+      await sendPasswordResetEmail(email);
+      
+      // Pass the email to the OTP page via state
+      navigate("/verify-otp", { state: { email } });
+    } catch (err) {
+      console.error('Send reset email error:', err);
+      setError(err.message || "Failed to send reset email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -88,9 +102,16 @@ export default function ForgetPassword() {
             />
           </div>
 
+          {/* Error message display */}
+          {error && (
+            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
+
           <div className="mt-8">
-            <Button primary onClick={handleSendReset}>
-              {t.sendResetLink}
+            <Button primary onClick={handleSendReset} disabled={loading}>
+              {loading ? "Sending..." : t.sendResetLink}
             </Button>
           </div>
 

@@ -1,20 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Input from "../UI/Input";
 import Button from "../UI/Button";
 import Footer from "../UI/Footer";
 import Logo from "../assets/logo.png";
 import { IoLanguage } from "react-icons/io5";
 import { useTranslation } from "../contexts/TranslationContext";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { verifyOtp, resendOtp } from "../lib/service";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function OTPPage() {
+export default function SignupOTPPage() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
   const location = useLocation();
-  const email = location.state?.email || "user@example.com"; // Get email from navigation state
+  const email = location.state?.email || "user@example.com";
 
   const [entered, setEntered] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", ""]); // 4 digits
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -22,7 +20,7 @@ export default function OTPPage() {
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
-  }, []); // Empty dependency array - only run once on mount
+  }, []);
 
   const code = useMemo(() => otp.join(""), [otp]);
 
@@ -31,9 +29,8 @@ export default function OTPPage() {
       const next = [...otp];
       next[index] = value;
       setOtp(next);
-      // Auto-focus next input if a digit entered
       if (value && index < otp.length - 1) {
-        const nextInput = document.getElementById(`otp-${index + 1}`);
+        const nextInput = document.getElementById(`signup-otp-${index + 1}`);
         nextInput && nextInput.focus();
       }
     }
@@ -41,20 +38,29 @@ export default function OTPPage() {
 
   function handleKeyDown(index, e) {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
+      const prevInput = document.getElementById(`signup-otp-${index - 1}`);
       prevInput && prevInput.focus();
     }
   }
 
   const navigate = useNavigate();
-  
+
   async function handleResend() {
     try {
       setError("");
       setResendLoading(true);
-      await resendOtp(email);
-      // Show success message or feedback
-      setError(""); // Clear any errors
+      
+      const response = await fetch('/api/auth/signUp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to resend code');
+      }
+      
+      setError("");
     } catch (err) {
       console.error('Resend OTP error:', err);
       setError(err.message || "Failed to resend code. Please try again.");
@@ -62,28 +68,49 @@ export default function OTPPage() {
       setResendLoading(false);
     }
   }
-  
+
   async function handleVerify() {
     try {
       setError("");
       setLoading(true);
-      
+
       if (code.length !== 4) {
         setError("Please enter all 4 digits");
         setLoading(false);
         return;
       }
-      
-      await verifyOtp(email, code);
-      // Pass email to reset password page
-      navigate("/reset-password/5", { state: { email } });
+
+      const response = await fetch('/api/auth/verifyAccount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: code }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Invalid code');
+      }
+
+      const data = await response.json();
+
+      // Store token if provided
+      if (data.data && data.data.token) {
+        localStorage.setItem('auth_token', data.data.token);
+        localStorage.setItem('user_data', JSON.stringify(data.data));
+      }
+
+      // Clear OAuth context
+      sessionStorage.removeItem('oauth_params');
+      sessionStorage.removeItem('oauth_state');
+      sessionStorage.removeItem('oauth_social_flow');
+
+      // Navigate to login
+      navigate("/login", { replace: true });
     } catch (err) {
       console.error('Verify OTP error:', err);
       setError(err.message || "Invalid code. Please try again.");
-      // Clear OTP inputs on error
       setOtp(["", "", "", ""]);
-      // Focus first input
-      const firstInput = document.getElementById('otp-0');
+      const firstInput = document.getElementById('signup-otp-0');
       firstInput && firstInput.focus();
     } finally {
       setLoading(false);
@@ -99,7 +126,7 @@ export default function OTPPage() {
         <div
           className={`rounded-3xl bg-white shadow-xl border border-gray-100 p-6 sm:p-8 hover:shadow transform transition-all duration-500 ${
             entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          } hover:-translate-y-0.5 hover:shadow-2xl `}
+          } hover:-translate-y-0.5 hover:shadow-2xl`}
         >
           <div className="flex justify-end mb-4">
             <button
@@ -118,7 +145,7 @@ export default function OTPPage() {
           <img
             src={Logo}
             alt="logo"
-            className=" mx-auto mb-6 transition-transform duration-300 hover:scale-105"
+            className="mx-auto mb-6 transition-transform duration-300 hover:scale-105"
           />
 
           <h1 className="text-xl font-semibold text-center text-gray-900 mb-2">
@@ -136,7 +163,7 @@ export default function OTPPage() {
             {otp.map((digit, idx) => (
               <input
                 key={idx}
-                id={`otp-${idx}`}
+                id={`signup-otp-${idx}`}
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={1}
@@ -150,7 +177,6 @@ export default function OTPPage() {
             ))}
           </div>
 
-          {/* Error message display */}
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200">
               <p className="text-sm text-red-600 text-center">{error}</p>
@@ -164,15 +190,6 @@ export default function OTPPage() {
             <Button primary onClick={handleVerify} disabled={loading}>
               {loading ? "Verifying..." : t.otpVerify}
             </Button>
-          </div>
-
-          <div className="mt-5 text-center text-sm text-gray-700">
-            <Link
-              to="./reset-password/2"
-              className="font-medium text-[#20ABF0] underline-offset-4 hover:underline cursor-pointer"
-            >
-              {t.otpChangeEmail}
-            </Link>
           </div>
         </div>
         <Footer language={language} />

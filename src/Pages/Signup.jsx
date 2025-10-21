@@ -14,7 +14,7 @@ import {
   loginWithGoogle,
   loginWithApple,
 } from "../lib/service";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Signup() {
   // Get translation context
@@ -29,11 +29,15 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
-  }, [entered]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Firebase mock setup using global variables
   // Expected globals: __app_id, __firebase_config, __initial_auth_token
@@ -51,16 +55,52 @@ export default function Signup() {
   }
 
   async function handlePrimarySignUp() {
-    if (password !== confirmPassword) {
-      console.error("Passwords do not match");
-      return;
+    try {
+      setError("");
+      
+      // Validation
+      if (!fullName || !email || !password || !confirmPassword) {
+        setError("Please fill in all fields");
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+      
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        return;
+      }
+      
+      if (!/(?=.*[0-9])/.test(password)) {
+        setError("Password must contain at least one number");
+        return;
+      }
+      
+      if (!/(?=.*[!@#$%^&*])/.test(password)) {
+        setError("Password must contain at least one special character (!@#$%^&*)");
+        return;
+      }
+      
+      if (!agreeToTerms) {
+        setError("Please agree to terms and conditions");
+        return;
+      }
+      
+      setLoading(true);
+      initializeFirebaseIfNeeded();
+      const response = await signUpWithEmailPassword(fullName, email, password);
+      
+      // Navigate to signup OTP verification page with email
+      navigate("/verify-signup", { state: { email } });
+    } catch (err) {
+      console.error('Sign up error:', err);
+      setError(err.message || "Failed to sign up. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    if (!agreeToTerms) {
-      console.error("Please agree to terms and conditions");
-      return;
-    }
-    initializeFirebaseIfNeeded();
-    await signUpWithEmailPassword(fullName, email, password);
   }
 
   function handleGoogleSignUp() {
@@ -187,9 +227,16 @@ export default function Signup() {
             </label>
           </div>
 
+          {/* Error message display */}
+          {error && (
+            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
+
           <div className="mt-10">
-            <Button primary onClick={handlePrimarySignUp}>
-              {t.signUp}
+            <Button primary onClick={handlePrimarySignUp} disabled={loading}>
+              {loading ? "Signing up..." : t.signUp}
             </Button>
           </div>
 

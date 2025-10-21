@@ -5,22 +5,26 @@ import Logo from "../assets/logo.png";
 import { IoEye, IoEyeOff, IoLanguage } from "react-icons/io5";
 import { FaLock } from "react-icons/fa";
 import { useTranslation } from "../contexts/TranslationContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { updatePassword } from "../lib/service";
 
 export default function ResetPassword() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
+  const location = useLocation();
+  const email = location.state?.email || "";
 
   const [entered, setEntered] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
-  }, [entered]);
+  }, []); // Empty dependency array - only run once on mount
 
   function initializeFirebaseIfNeeded() {
     const globals = typeof window !== "undefined" ? window : {};
@@ -39,17 +43,57 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   async function handleUpdatePassword() {
-    if (!password || !confirmPassword) {
-      console.error("Missing password inputs");
-      return;
+    try {
+      setError("");
+      
+      if (!email) {
+        setError("Email not found. Please start the password reset process again.");
+        return;
+      }
+      
+      if (!password || !confirmPassword) {
+        setError("Please fill in all fields");
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+      
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
+      
+      setLoading(true);
+      initializeFirebaseIfNeeded();
+      const response = await updatePassword(email, password);
+      
+      // Backend returns token and user data - store them
+      if (response.data && response.data.token) {
+        // Store authentication data
+        localStorage.setItem('auth_token', response.data.token);
+        localStorage.setItem('user_data', JSON.stringify(response.data));
+        
+        // Clear any OAuth context from sessionStorage (in case user was in OAuth flow)
+        sessionStorage.removeItem('oauth_params');
+        sessionStorage.removeItem('oauth_state');
+        sessionStorage.removeItem('oauth_social_flow');
+        
+        // Redirect to login page (user is already authenticated with token)
+        // You can change this to your dashboard/home page if you have one
+        navigate("/login", { replace: true });
+      } else {
+        // Fallback: if no token, go to login
+        navigate("/login");
+      }
+    } catch (err) {
+      console.error('Update password error:', err);
+      setError(err.message || "Failed to update password. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    if (password !== confirmPassword) {
-      console.error("Passwords do not match");
-      return;
-    }
-    initializeFirebaseIfNeeded();
-    await updatePassword(password);
-    navigate("/login");
   }
 
   return (
@@ -146,9 +190,16 @@ export default function ResetPassword() {
             </div>
           </div>
 
+          {/* Error message display */}
+          {error && (
+            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
+
           <div className="mt-8">
-            <Button primary onClick={handleUpdatePassword}>
-              {t.updatePassword}
+            <Button primary onClick={handleUpdatePassword} disabled={loading}>
+              {loading ? "Updating..." : t.updatePassword}
             </Button>
           </div>
         </div>

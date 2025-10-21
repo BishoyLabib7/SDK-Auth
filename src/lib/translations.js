@@ -40,12 +40,12 @@ export const translations = {
 
     // OTP
     otpTitle: "Enter verification code",
-    otpSubtitlePrefix: "We sent a 6-digit code to",
+    otpSubtitlePrefix: "We sent a 4-digit code to",
     otpDidntReceive: "Didn't receive the code?",
     otpResend: "Resend",
     otpVerify: "Verify",
     otpChangeEmail: "Change email",
-    otpCodePlaceholder: "Enter 6-digit code",
+    otpCodePlaceholder: "Enter 4-digit code",
 
     // Reset password
     resetNewPasswordTitle: "Create new password",
@@ -54,6 +54,37 @@ export const translations = {
     newPassword: "New password",
     confirmNewPassword: "Confirm new password",
     updatePassword: "Update password",
+
+    // OAuth Consent
+    oauthConsentTitle: "Authorize Application",
+    oauthConsentSubtitle: "wants to access your account",
+    oauthConsentPermissions: "This application will be able to:",
+    oauthConsentAllow: "Allow",
+    oauthConsentDeny: "Deny",
+    oauthConsentYourInfo: "Your Information",
+
+    // Permissions
+    permissionProfile: "View your profile information",
+    permissionEmail: "View your email address",
+    permissionRead: "Read your data",
+    permissionWrite: "Modify your data",
+    permissionName: "View your name",
+    permissionProfilePhoto: "View your profile photo",
+    permissionPhone: "View your phone number",
+    permissionAddress: "View your address",
+
+    // OAuth Errors
+    oauthErrorTitle: "Authorization Error",
+    oauthErrorInvalidRedirect: "Invalid application configuration",
+    oauthErrorSessionExpired: "Your session has expired",
+    oauthErrorNetwork: "Network error. Please try again.",
+    oauthErrorMissingParams: "Invalid request. Missing required parameters.",
+    oauthErrorInvalidCredentials: "Invalid email or password",
+    oauthErrorServerError: "Something went wrong. Please try again later.",
+    oauthRestartFlow: "Restart",
+    oauthContactSupport: "Please contact the application developer for support.",
+    retry: "Retry",
+    cancel: "Cancel",
   },
   ar: {
     // Common
@@ -96,12 +127,12 @@ export const translations = {
 
     // OTP
     otpTitle: "أدخل رمز التحقق",
-    otpSubtitlePrefix: "قمنا بإرسال رمز مكون من 6 أرقام إلى",
+    otpSubtitlePrefix: "قمنا بإرسال رمز مكون من 4 أرقام إلى",
     otpDidntReceive: "لم يصلك الرمز؟",
     otpResend: "إعادة الإرسال",
     otpVerify: "تحقق",
     otpChangeEmail: "تغيير البريد الإلكتروني",
-    otpCodePlaceholder: "أدخل الرمز المكون من 6 أرقام",
+    otpCodePlaceholder: "أدخل الرمز المكون من 4 أرقام",
 
     // Reset password
     resetNewPasswordTitle: "إنشاء كلمة مرور جديدة",
@@ -109,6 +140,37 @@ export const translations = {
     newPassword: "كلمة المرور الجديدة",
     confirmNewPassword: "تأكيد كلمة المرور الجديدة",
     updatePassword: "تحديث كلمة المرور",
+
+    // OAuth Consent
+    oauthConsentTitle: "تفويض التطبيق",
+    oauthConsentSubtitle: "يريد الوصول إلى حسابك",
+    oauthConsentPermissions: "سيتمكن هذا التطبيق من:",
+    oauthConsentAllow: "السماح",
+    oauthConsentDeny: "رفض",
+    oauthConsentYourInfo: "معلوماتك",
+
+    // Permissions
+    permissionProfile: "عرض معلومات ملفك الشخصي",
+    permissionEmail: "عرض عنوان بريدك الإلكتروني",
+    permissionRead: "قراءة بياناتك",
+    permissionWrite: "تعديل بياناتك",
+    permissionName: "عرض اسمك",
+    permissionProfilePhoto: "عرض صورة ملفك الشخصي",
+    permissionPhone: "عرض رقم هاتفك",
+    permissionAddress: "عرض عنوانك",
+
+    // OAuth Errors
+    oauthErrorTitle: "خطأ في التفويض",
+    oauthErrorInvalidRedirect: "تكوين التطبيق غير صالح",
+    oauthErrorSessionExpired: "انتهت صلاحية جلستك",
+    oauthErrorNetwork: "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
+    oauthErrorMissingParams: "طلب غير صالح. معلمات مطلوبة مفقودة.",
+    oauthErrorInvalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    oauthErrorServerError: "حدث خطأ ما. يرجى المحاولة مرة أخرى لاحقاً.",
+    oauthRestartFlow: "إعادة البدء",
+    oauthContactSupport: "يرجى الاتصال بمطور التطبيق للحصول على الدعم.",
+    retry: "إعادة المحاولة",
+    cancel: "إلغاء",
   },
 };
 
