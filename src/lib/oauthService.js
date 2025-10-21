@@ -105,6 +105,14 @@ export async function submitOAuthLogin(email, password, oauthParams) {
  */
 export async function submitOAuthConsent(approved, consentToken, oauthParams) {
   try {
+    const requestBody = {
+      consent_token: consentToken,
+      action: approved ? 'approve' : 'deny', // Backend expects 'approve' or 'deny'
+      redirect_uri: oauthParams.redirect_uri // Backend requires redirect_uri
+    };
+    
+    console.log('submitOAuthConsent - sending to backend:', requestBody);
+    
     const response = await fetch('/api/oauth/consent', {
       method: 'POST',
       credentials: 'include',
@@ -112,11 +120,7 @@ export async function submitOAuthConsent(approved, consentToken, oauthParams) {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        consent_token: consentToken,
-        action: approved ? 'approve' : 'deny', // Backend expects 'approve' or 'deny'
-        redirect_uri: oauthParams.redirect_uri // Backend requires redirect_uri
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {

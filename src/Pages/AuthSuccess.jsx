@@ -34,10 +34,10 @@ async function completeOAuthFlow(jwtToken, oauthParams) {
       // Direct redirect to third-party app with authorization code
       console.log("Redirecting to authorized URL:", result.redirect_url);
       window.location.href = result.redirect_url;
-    } else if (result.status === 'consent_required') {
+    } else if (result.status === 'consent_required' || result.status === 'needs_consent') {
       // Redirect to consent page
       console.log("Consent required, redirecting to consent page");
-      window.location.href = `/oauth/consent?token=${encodeURIComponent(result.consent_token)}`;
+      window.location.href = `/oauth/consent?consent_token=${encodeURIComponent(result.consent_token)}`;
     } else {
       throw new Error(`Unexpected OAuth response: ${result.status}`);
     }

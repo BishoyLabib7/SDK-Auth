@@ -24,14 +24,20 @@ export default function OAuthConsent() {
     return () => cancelAnimationFrame(id);
   }, []);
 
+  // State for consent token from URL
+  const [consentToken, setConsentToken] = useState(null);
+
   // Load consent data on mount if not in context
   useEffect(() => {
     if (!consentData) {
-      // Try to get consent data from URL params or show error
+      // Try to get consent data from URL params
       const urlParams = new URLSearchParams(window.location.search);
-      const consentToken = urlParams.get('consent_token');
+      const tokenFromUrl = urlParams.get('consent_token');
       
-      if (!consentToken && !oauthParams) {
+      if (tokenFromUrl) {
+        setConsentToken(tokenFromUrl);
+        console.log('Consent token from URL:', tokenFromUrl);
+      } else if (!oauthParams) {
         const errorInfo = mapOAuthError("Missing required parameters", t);
         setError(errorInfo.message);
         setErrorType(errorInfo.type);
@@ -40,7 +46,14 @@ export default function OAuthConsent() {
   }, [consentData, oauthParams, t]);
 
   async function handleApprove() {
-    if (!consentData || !oauthParams) {
+    const tokenToUse = consentData?.consent_token || consentToken;
+    
+    console.log('handleApprove - consentData:', consentData);
+    console.log('handleApprove - consentToken from URL:', consentToken);
+    console.log('handleApprove - oauthParams:', oauthParams);
+    console.log('handleApprove - tokenToUse:', tokenToUse);
+    
+    if (!tokenToUse || !oauthParams) {
       const errorInfo = mapOAuthError("Missing required parameters", t);
       setError(errorInfo.message);
       setErrorType(errorInfo.type);
@@ -52,9 +65,15 @@ export default function OAuthConsent() {
     setErrorType(null);
 
     try {
+      console.log('Submitting consent with:', {
+        approved: true,
+        consent_token: tokenToUse,
+        oauthParams: oauthParams
+      });
+      
       const response = await submitOAuthConsent(
         true,
-        consentData.consent_token,
+        tokenToUse,
         oauthParams
       );
 
@@ -78,7 +97,14 @@ export default function OAuthConsent() {
   }
 
   async function handleDeny() {
-    if (!consentData || !oauthParams) {
+    const tokenToUse = consentData?.consent_token || consentToken;
+    
+    console.log('handleDeny - consentData:', consentData);
+    console.log('handleDeny - consentToken from URL:', consentToken);
+    console.log('handleDeny - oauthParams:', oauthParams);
+    console.log('handleDeny - tokenToUse:', tokenToUse);
+    
+    if (!tokenToUse || !oauthParams) {
       const errorInfo = mapOAuthError("Missing required parameters", t);
       setError(errorInfo.message);
       setErrorType(errorInfo.type);
@@ -90,9 +116,15 @@ export default function OAuthConsent() {
     setErrorType(null);
 
     try {
+      console.log('Submitting consent with:', {
+        approved: false,
+        consent_token: tokenToUse,
+        oauthParams: oauthParams
+      });
+      
       const response = await submitOAuthConsent(
         false,
-        consentData.consent_token,
+        tokenToUse,
         oauthParams
       );
 
