@@ -11,7 +11,7 @@ export default defineConfig({
       // Proxy all API requests to backend
       // This prevents conflicts with frontend routes like /oauth/authorize
       '/api': {
-        target: 'http://localhost:3010',
+        target: 'https://poswize.com/testAPI',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''), // Removes /api prefix, so /api/forget-password -> /forget-password
