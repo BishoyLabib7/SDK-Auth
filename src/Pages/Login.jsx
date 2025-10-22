@@ -39,12 +39,12 @@ export default function Login() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const redirect_uri = urlParams.get('redirect_uri');
-    
+
     console.log('=== Login Page Mount ===');
     console.log('Full URL:', window.location.href);
     console.log('Search params:', window.location.search);
     console.log('redirect_uri from URL:', redirect_uri);
-    
+
     if (redirect_uri) {
       // This is an OAuth flow - store parameters
       // Note: setOAuthParams will generate state if not provided
@@ -67,17 +67,17 @@ export default function Login() {
     async function handleSocialOAuthCallback() {
       // Check if returning from social login with OAuth context
       const savedOAuthParams = sessionStorage.getItem('oauth_social_flow');
-      
+
       if (savedOAuthParams) {
         try {
           const params = JSON.parse(savedOAuthParams);
-          
+
           // Check if user is now authenticated (social login succeeded)
           // This would typically be indicated by a session cookie or token
           // For now, we'll check authorization status
           const { checkOAuthAuthorization } = await import('../lib/oauthService');
           const response = await checkOAuthAuthorization(params);
-          
+
           if (response.status === 'needs_consent') {
             // Social login succeeded, show consent screen
             setConsentData(response);
@@ -99,7 +99,7 @@ export default function Login() {
         }
       }
     }
-    
+
     handleSocialOAuthCallback();
   }, [setConsentData, navigate, t]);
 
@@ -118,11 +118,11 @@ export default function Login() {
   async function handlePrimarySignIn() {
     try {
       setError(""); // Clear any previous errors
-      
+
       if (isInOAuthFlow()) {
         // OAuth flow - use OAuth login endpoint
         const response = await submitOAuthLogin(email, password, oauthParams);
-        
+
         if (response.status === 'success') {
           // Needs consent - navigate to consent page
           setConsentData(response);
@@ -151,13 +151,13 @@ export default function Login() {
 
   function handleGoogleSignIn() {
     initializeFirebaseIfNeeded();
-    
+
     console.log('=== Google Sign In Debug ===');
     console.log('isInOAuthFlow:', isInOAuthFlow());
     console.log('oauthParams:', oauthParams);
     console.log('URL search params:', window.location.search);
     console.log('SessionStorage oauth_params:', sessionStorage.getItem('oauth_params'));
-    
+
     // If in OAuth flow, preserve OAuth parameters for social login callback
     if (isInOAuthFlow()) {
       // Store OAuth params in sessionStorage so they persist through social auth redirect
@@ -172,7 +172,7 @@ export default function Login() {
 
   function handleAppleSignIn() {
     initializeFirebaseIfNeeded();
-    
+
     // If in OAuth flow, preserve OAuth parameters for social login callback
     if (isInOAuthFlow()) {
       // Store OAuth params in sessionStorage so they persist through social auth redirect
@@ -190,9 +190,8 @@ export default function Login() {
     >
       <div className="w-full max-w-xl">
         <div
-          className={`rounded-3xl bg-white shadow-xl border border-gray-100 p-6 sm:p-8 hover:shadow transform transition-all duration-500 ${
-            entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          } hover:-translate-y-0.5 hover:shadow-2xl `}
+          className={`rounded-3xl bg-white shadow-xl border border-gray-100 p-6 sm:p-8 hover:shadow transform transition-all duration-500 ${entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+            } hover:-translate-y-0.5 hover:shadow-2xl `}
         >
           <div className="flex justify-end mb-4">
             <button
