@@ -117,14 +117,14 @@ export default function OAuthAuthorize() {
         onRestart={() => {
           clearOAuthContext();
           if (oauthParams?.redirect_uri) {
-            window.location.href = `/oauth/authorize?${new URLSearchParams(oauthParams).toString()}`;
+            window.location.href = `/oauth2/oauth/authorize?${new URLSearchParams(oauthParams).toString()}`;
           } else {
-            window.location.href = "/login";
+            window.location.href = "/oauth2/login";
           }
         }}
         onCancel={() => {
           clearOAuthContext();
-          window.location.href = "/login";
+          window.location.href = "/oauth2/login";
         }}
         showLanguageToggle={true}
       />

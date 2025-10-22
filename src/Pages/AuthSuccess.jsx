@@ -37,7 +37,7 @@ async function completeOAuthFlow(jwtToken, oauthParams) {
     } else if (result.status === 'consent_required' || result.status === 'needs_consent') {
       // Redirect to consent page
       console.log("Consent required, redirecting to consent page");
-      window.location.href = `./oauth/consent?consent_token=${encodeURIComponent(result.consent_token)}`;
+      window.location.href = `/oauth2/auth/oauth/consent?consent_token=${encodeURIComponent(result.consent_token)}`;
     } else {
       throw new Error(`Unexpected OAuth response: ${result.status}`);
     }

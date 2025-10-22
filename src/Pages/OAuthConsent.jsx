@@ -200,12 +200,12 @@ export default function OAuthConsent() {
         onRestart={() => {
           clearOAuthContext();
           window.location.href = oauthParams?.redirect_uri 
-            ? `/oauth/authorize?${new URLSearchParams(oauthParams).toString()}`
-            : "/login";
+            ? `/oauth2/oauth/authorize?${new URLSearchParams(oauthParams).toString()}`
+            : "/oauth2/login";
         }}
         onCancel={() => {
           clearOAuthContext();
-          window.location.href = "/login";
+          window.location.href = "/oauth2/login";
         }}
         showLanguageToggle={true}
       />
