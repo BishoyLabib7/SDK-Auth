@@ -33,15 +33,15 @@ export async function loginWithGoogle(oauthParams) {
     console.log('OAuth context to encode:', stateData);
     console.log('Encoded state:', encodedState);
     
-    const googleUrl = `./Auth/google?state=${encodedState}`;
+    const googleUrl = `/oauth2/api/Auth/google?state=${encodedState}`;
     console.log('Full Google OAuth URL:', window.location.origin + googleUrl);
     console.log('Redirecting to Google OAuth...');
     window.location.href = googleUrl;
   } else {
     console.log('No OAuth params - regular Google login');
-    console.log('Redirecting to:', window.location.origin + './Auth/google');
+    console.log('Redirecting to:', window.location.origin + '/oauth2/api/Auth/google');
     // Regular Google OAuth without OAuth context
-    window.location.href = './Auth/google';
+    window.location.href = '/oauth2/api/Auth/google';
   }
 }
 
@@ -70,16 +70,16 @@ export async function loginWithApple(oauthParams) {
       state: oauthParams.state || ''
     };
     const encodedState = encodeURIComponent(btoa(JSON.stringify(stateData)));
-    window.location.href = `./Auth/apple?state=${encodedState}`;
+    window.location.href = `/oauth2/api/Auth/apple?state=${encodedState}`;
   } else {
     // Regular Apple OAuth without OAuth context
-    window.location.href = './Auth/apple';
+    window.location.href = '/oauth2/api/Auth/apple';
   }
 }
 
 export async function signUpWithEmailPassword(fullName, username, email, password) {
   try {
-    const response = await fetch('./auth/signUp', {
+    const response = await fetch('/oauth2/api/auth/signUp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export async function signUpWithEmailPassword(fullName, username, email, passwor
 
 export async function sendPasswordResetEmail(email) {
   try {
-    const response = await fetch('./auth/forget-password', {
+    const response = await fetch('/oauth2/api/auth/forget-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ export async function sendPasswordResetEmail(email) {
 
 export async function verifyOtp(email, code) {
   try {
-    const response = await fetch('./auth/verify-otp', {
+    const response = await fetch('/oauth2/api/auth/verify-otp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ export async function verifyOtp(email, code) {
 
 export async function resendOtp(email) {
   try {
-    const response = await fetch('./auth/resend-otp', {
+    const response = await fetch('/oauth2/api/auth/resend-otp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export async function resendOtp(email) {
 
 export async function updatePassword(email, newPassword) {
   try {
-    const response = await fetch('./auth/change-forget-password', {
+    const response = await fetch('/oauth2/api/auth/change-forget-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

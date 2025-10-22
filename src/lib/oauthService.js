@@ -27,7 +27,7 @@ export async function getOAuthState(params) {
       consent_token: params.consent_token || ''
     });
 
-    const response = await fetch(`./oauth/state?${queryParams}`, {
+    const response = await fetch(`/oauth2/api/oauth/state?${queryParams}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -62,7 +62,7 @@ export async function getOAuthState(params) {
  */
 export async function submitOAuthLogin(email, password, oauthParams) {
   try {
-    const response = await fetch('./oauth/login', {
+    const response = await fetch('/oauth2/api/oauth/login', {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -113,7 +113,7 @@ export async function submitOAuthConsent(approved, consentToken, oauthParams) {
     
     console.log('submitOAuthConsent - sending to backend:', requestBody);
     
-    const response = await fetch('./oauth/consent', {
+    const response = await fetch('/oauth2/api/oauth/consent', {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -155,7 +155,7 @@ export async function checkOAuthAuthorization(oauthParams) {
       state: oauthParams.state || ''
     });
 
-    const response = await fetch(`./oauth/authorize?${queryParams}`, {
+    const response = await fetch(`/oauth2/api/oauth/authorize?${queryParams}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
