@@ -19,6 +19,7 @@ export const translations = {
 
     // Signup specific
     fullName: "Full Name",
+    username: "Username",
     confirmPassword: "Confirm Password",
     agreeToTerms: "I agree to the Terms and Conditions",
     alreadyRegistered: "Already have an account?",
@@ -106,6 +107,7 @@ export const translations = {
 
     // Signup specific
     fullName: "الاسم الكامل",
+    username: "اسم المستخدم",
     confirmPassword: "تأكيد كلمة المرور",
     agreeToTerms: "أوافق على الشروط والأحكام",
     alreadyRegistered: "لديك حساب بالفعل؟",

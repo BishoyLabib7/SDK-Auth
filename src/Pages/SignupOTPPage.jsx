@@ -4,10 +4,12 @@ import Footer from "../UI/Footer";
 import Logo from "../assets/logo.png";
 import { IoLanguage } from "react-icons/io5";
 import { useTranslation } from "../contexts/TranslationContext";
+import { useOAuthContext } from "../contexts/OAuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function SignupOTPPage() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
+  const { setOAuthParams } = useOAuthContext();
   const location = useLocation();
   const email = location.state?.email || "user@example.com";
 
@@ -21,6 +23,24 @@ export default function SignupOTPPage() {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // Detect OAuth parameters in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect_uri = urlParams.get('redirect_uri');
+    
+    if (redirect_uri) {
+      // This is an OAuth flow - store parameters
+      const params = {
+        redirect_uri,
+        response_type: urlParams.get('response_type') || 'code',
+        scope: urlParams.get('scope') || '',
+        state: urlParams.get('state') || ''
+      };
+      setOAuthParams(params);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const code = useMemo(() => otp.join(""), [otp]);
 
@@ -99,13 +119,24 @@ export default function SignupOTPPage() {
         localStorage.setItem('user_data', JSON.stringify(data.data));
       }
 
-      // Clear OAuth context
-      sessionStorage.removeItem('oauth_params');
-      sessionStorage.removeItem('oauth_state');
+      // Don't clear OAuth context - preserve it for login redirect
+      // Only clear social flow flag since this is email/password signup
       sessionStorage.removeItem('oauth_social_flow');
 
-      // Navigate to login
-      navigate("/login", { replace: true });
+      // Navigate to login, preserving OAuth parameters in URL
+      const oauthParams = sessionStorage.getItem('oauth_params');
+      if (oauthParams) {
+        try {
+          const params = JSON.parse(oauthParams);
+          const queryString = new URLSearchParams(params).toString();
+          navigate(`/login?${queryString}`, { replace: true });
+        } catch (error) {
+          console.error('Failed to parse OAuth params:', error);
+          navigate("/login", { replace: true });
+        }
+      } else {
+        navigate("/login", { replace: true });
+      }
     } catch (err) {
       console.error('Verify OTP error:', err);
       setError(err.message || "Invalid code. Please try again.");

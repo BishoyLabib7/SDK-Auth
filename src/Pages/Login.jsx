@@ -82,7 +82,7 @@ export default function Login() {
             // Social login succeeded, show consent screen
             setConsentData(response);
             sessionStorage.removeItem('oauth_social_flow');
-            navigate('/oauth/consent');
+            navigate('/auth/oauth/consent');
           } else if (response.status === 'authorized') {
             // Has existing consent, redirect immediately
             sessionStorage.removeItem('oauth_social_flow');
@@ -126,7 +126,7 @@ export default function Login() {
         if (response.status === 'success') {
           // Needs consent - navigate to consent page
           setConsentData(response);
-          navigate('/oauth/consent');
+          navigate('/auth/oauth/consent');
         } else if (response.status === 'authorized') {
           // Has existing consent - clear context and redirect immediately
           clearOAuthContext();
@@ -316,7 +316,7 @@ export default function Login() {
           <div className="mt-5 text-center text-sm text-gray-700">
             <span>{t.notRegistered} </span>
             <Link
-              to="/signup"
+              to={`/signup${window.location.search}`}
               className="font-medium text-[#20ABF0] underline-offset-4 hover:underline cursor-pointer"
             >
               {t.signUp}

@@ -4,7 +4,7 @@ import Input from "../UI/Input";
 import Button from "../UI/Button";
 import { FcGoogle } from "react-icons/fc";
 import { ImAppleinc } from "react-icons/im";
-import { IoMail, IoEye, IoEyeOff, IoLanguage, IoPerson } from "react-icons/io5";
+import { IoMail, IoEye, IoEyeOff, IoLanguage, IoPerson, IoAt } from "react-icons/io5";
 import { FaLock } from "react-icons/fa";
 import Logo from "../assets/logo.png";
 import Footer from "../UI/Footer";
@@ -14,14 +14,17 @@ import {
   loginWithGoogle,
   loginWithApple,
 } from "../lib/service";
+import { useOAuthContext } from "../contexts/OAuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Signup() {
   // Get translation context
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
+  const { setOAuthParams, oauthParams, isInOAuthFlow } = useOAuthContext();
 
   // State
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -38,6 +41,24 @@ export default function Signup() {
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
   }, []); // Empty dependency array - only run once on mount
+
+  // Detect OAuth parameters in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect_uri = urlParams.get('redirect_uri');
+    
+    if (redirect_uri) {
+      // This is an OAuth flow - store parameters
+      const params = {
+        redirect_uri,
+        response_type: urlParams.get('response_type') || 'code',
+        scope: urlParams.get('scope') || '',
+        state: urlParams.get('state') || ''
+      };
+      setOAuthParams(params);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Firebase mock setup using global variables
   // Expected globals: __app_id, __firebase_config, __initial_auth_token
@@ -59,8 +80,18 @@ export default function Signup() {
       setError("");
       
       // Validation
-      if (!fullName || !email || !password || !confirmPassword) {
+      if (!fullName || !username || !email || !password || !confirmPassword) {
         setError("Please fill in all fields");
+        return;
+      }
+      
+      if (username.length < 3) {
+        setError("Username must be at least 3 characters");
+        return;
+      }
+      
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        setError("Username can only contain letters, numbers, and underscores");
         return;
       }
       
@@ -91,10 +122,10 @@ export default function Signup() {
       
       setLoading(true);
       initializeFirebaseIfNeeded();
-      const response = await signUpWithEmailPassword(fullName, email, password);
+      const response = await signUpWithEmailPassword(fullName, username, email, password);
       
-      // Navigate to signup OTP verification page with email
-      navigate("/verify-signup", { state: { email } });
+      // Navigate to signup OTP verification page with email, preserving OAuth parameters
+      navigate(`/verify-signup${window.location.search}`, { state: { email } });
     } catch (err) {
       console.error('Sign up error:', err);
       setError(err.message || "Failed to sign up. Please try again.");
@@ -105,12 +136,26 @@ export default function Signup() {
 
   function handleGoogleSignUp() {
     initializeFirebaseIfNeeded();
-    loginWithGoogle();
+    
+    // If in OAuth flow, preserve OAuth parameters for social login callback
+    if (isInOAuthFlow()) {
+      sessionStorage.setItem('oauth_social_flow', JSON.stringify(oauthParams));
+      loginWithGoogle(oauthParams);
+    } else {
+      loginWithGoogle();
+    }
   }
 
   function handleAppleSignUp() {
     initializeFirebaseIfNeeded();
-    loginWithApple();
+    
+    // If in OAuth flow, preserve OAuth parameters for social login callback
+    if (isInOAuthFlow()) {
+      sessionStorage.setItem('oauth_social_flow', JSON.stringify(oauthParams));
+      loginWithApple(oauthParams);
+    } else {
+      loginWithApple();
+    }
   }
 
   return (
@@ -150,6 +195,15 @@ export default function Signup() {
               placeholder={t.fullName}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              isRTL={isRTL}
+            />
+
+            <Input
+              type="text"
+              icon={<IoAt />}
+              placeholder={t.username}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               isRTL={isRTL}
             />
 
@@ -243,7 +297,7 @@ export default function Signup() {
           <div className="mt-5 text-center text-sm text-gray-700">
             <span>{t.alreadyRegistered} </span>
             <Link
-              to="/login"
+              to={`/login${window.location.search}`}
               className="font-medium text-[#20ABF0] underline-offset-4 hover:underline cursor-pointer"
             >
               {t.signIn}

@@ -77,7 +77,7 @@ export async function loginWithApple(oauthParams) {
   }
 }
 
-export async function signUpWithEmailPassword(fullName, email, password) {
+export async function signUpWithEmailPassword(fullName, username, email, password) {
   try {
     const response = await fetch('/api/auth/signUp', {
       method: 'POST',
@@ -88,7 +88,7 @@ export async function signUpWithEmailPassword(fullName, email, password) {
         name: fullName,
         email,
         password,
-        username: email.split('@')[0] // Use email prefix as username
+        username: username || email.split('@')[0] // Use provided username or email prefix as fallback
       }),
     });
 
