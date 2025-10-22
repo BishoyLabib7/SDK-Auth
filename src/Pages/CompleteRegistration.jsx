@@ -33,7 +33,7 @@ export default function CompleteRegistration() {
     setError("");
 
     try {
-      const response = await fetch("/api/Auth/complete-oauth-registration", {
+      const response = await fetch("/oauth2/api/Auth/complete-oauth-registration", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

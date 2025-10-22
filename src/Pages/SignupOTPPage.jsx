@@ -70,7 +70,7 @@ export default function SignupOTPPage() {
       setError("");
       setResendLoading(true);
       
-      const response = await fetch('/api/auth/signUp', {
+      const response = await fetch('/oauth2/api/auth/signUp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -100,7 +100,7 @@ export default function SignupOTPPage() {
         return;
       }
 
-      const response = await fetch('/api/auth/verifyAccount', {
+      const response = await fetch('/oauth2/api/auth/verifyAccount', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: code }),

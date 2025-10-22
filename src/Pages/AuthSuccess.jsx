@@ -9,7 +9,7 @@ async function completeOAuthFlow(jwtToken, oauthParams) {
     console.log("Completing OAuth flow with params:", oauthParams);
 
     // Call the backend OAuth authorize endpoint to complete the flow
-    const response = await fetch(`/api/oauth/authorize?${new URLSearchParams({
+    const response = await fetch(`/oauth2/api/oauth/authorize?${new URLSearchParams({
       redirect_uri: oauthParams.redirect_uri,
       response_type: oauthParams.response_type || 'code',
       scope: oauthParams.scope || '',
