@@ -79,25 +79,36 @@ export async function loginWithApple(oauthParams) {
 
 export async function signUpWithEmailPassword(fullName, username, email, password) {
   try {
-    const response = await fetch('/oauth2/api/auth/signUp', {
+    const url = '/oauth2/api/auth/signUp';
+    const body = {
+      name: fullName,
+      email,
+      password,
+      username: username || email.split('@')[0] // Use provided username or email prefix as fallback
+    };
+
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', { name: fullName, email, username: body.username });
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        name: fullName,
-        email,
-        password,
-        username: username || email.split('@')[0] // Use provided username or email prefix as fallback
-      }),
+      body: JSON.stringify(body),
     });
+
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.message || 'Failed to sign up');
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     console.error('Sign up error:', error);
     throw error;
@@ -106,7 +117,11 @@ export async function signUpWithEmailPassword(fullName, username, email, passwor
 
 export async function sendPasswordResetEmail(email) {
   try {
-    const response = await fetch('/oauth2/api/auth/forget-password', {
+    const url = '/oauth2/api/auth/forget-password';
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', { email });
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,12 +129,17 @@ export async function sendPasswordResetEmail(email) {
       body: JSON.stringify({ email }),
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.message || 'Failed to send reset email');
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     console.error('Send password reset email error:', error);
     throw error;
@@ -128,7 +148,11 @@ export async function sendPasswordResetEmail(email) {
 
 export async function verifyOtp(email, code) {
   try {
-    const response = await fetch('/oauth2/api/auth/verify-otp', {
+    const url = '/oauth2/api/auth/verify-otp';
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', { otp: code });
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -136,12 +160,17 @@ export async function verifyOtp(email, code) {
       body: JSON.stringify({ otp: code }), // Backend expects 'otp' field only
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.message || 'Invalid OTP code');
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     console.error('Verify OTP error:', error);
     throw error;
@@ -150,7 +179,11 @@ export async function verifyOtp(email, code) {
 
 export async function resendOtp(email) {
   try {
-    const response = await fetch('/oauth2/api/auth/resend-otp', {
+    const url = '/oauth2/api/auth/resend-otp';
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', { email });
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -158,12 +191,17 @@ export async function resendOtp(email) {
       body: JSON.stringify({ email }),
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.message || 'Failed to resend OTP');
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     console.error('Resend OTP error:', error);
     throw error;
@@ -172,7 +210,11 @@ export async function resendOtp(email) {
 
 export async function updatePassword(email, newPassword) {
   try {
-    const response = await fetch('/oauth2/api/auth/change-forget-password', {
+    const url = '/oauth2/api/auth/change-forget-password';
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', { email });
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -180,12 +222,17 @@ export async function updatePassword(email, newPassword) {
       body: JSON.stringify({ email, newPassword }),
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.message || 'Failed to update password');
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     console.error('Update password error:', error);
     throw error;

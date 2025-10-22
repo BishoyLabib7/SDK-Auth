@@ -13,7 +13,7 @@ import { mapOAuthError } from "../lib/oauthErrorHandler";
 export default function OAuthConsent() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
   const { oauthParams, consentData, clearOAuthContext } = useOAuthContext();
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [errorType, setErrorType] = useState(null);
@@ -33,7 +33,7 @@ export default function OAuthConsent() {
       // Try to get consent data from URL params
       const urlParams = new URLSearchParams(window.location.search);
       const tokenFromUrl = urlParams.get('consent_token');
-      
+
       if (tokenFromUrl) {
         setConsentToken(tokenFromUrl);
         console.log('Consent token from URL:', tokenFromUrl);
@@ -47,12 +47,12 @@ export default function OAuthConsent() {
 
   async function handleApprove() {
     const tokenToUse = consentData?.consent_token || consentToken;
-    
+
     console.log('handleApprove - consentData:', consentData);
     console.log('handleApprove - consentToken from URL:', consentToken);
     console.log('handleApprove - oauthParams:', oauthParams);
     console.log('handleApprove - tokenToUse:', tokenToUse);
-    
+
     if (!tokenToUse || !oauthParams) {
       const errorInfo = mapOAuthError("Missing required parameters", t);
       setError(errorInfo.message);
@@ -70,7 +70,7 @@ export default function OAuthConsent() {
         consent_token: tokenToUse,
         oauthParams: oauthParams
       });
-      
+
       const response = await submitOAuthConsent(
         true,
         tokenToUse,
@@ -98,12 +98,12 @@ export default function OAuthConsent() {
 
   async function handleDeny() {
     const tokenToUse = consentData?.consent_token || consentToken;
-    
+
     console.log('handleDeny - consentData:', consentData);
     console.log('handleDeny - consentToken from URL:', consentToken);
     console.log('handleDeny - oauthParams:', oauthParams);
     console.log('handleDeny - tokenToUse:', tokenToUse);
-    
+
     if (!tokenToUse || !oauthParams) {
       const errorInfo = mapOAuthError("Missing required parameters", t);
       setError(errorInfo.message);
@@ -121,7 +121,7 @@ export default function OAuthConsent() {
         consent_token: tokenToUse,
         oauthParams: oauthParams
       });
-      
+
       const response = await submitOAuthConsent(
         false,
         tokenToUse,
@@ -151,7 +151,7 @@ export default function OAuthConsent() {
   const getPermissionText = (permission) => {
     // Normalize permission string (lowercase, remove spaces, handle variations)
     const normalized = permission.toLowerCase().replace(/\s+/g, '');
-    
+
     const permissionMap = {
       profile: t.permissionProfile,
       email: t.permissionEmail,
@@ -164,7 +164,7 @@ export default function OAuthConsent() {
       phonenumber: t.permissionPhone,
       address: t.permissionAddress,
     };
-    
+
     return permissionMap[normalized] || permission;
   };
 
@@ -199,7 +199,7 @@ export default function OAuthConsent() {
         }}
         onRestart={() => {
           clearOAuthContext();
-          window.location.href = oauthParams?.redirect_uri 
+          window.location.href = oauthParams?.redirect_uri
             ? `/oauth2/oauth/authorize?${new URLSearchParams(oauthParams).toString()}`
             : "/oauth2/login";
         }}
@@ -220,9 +220,8 @@ export default function OAuthConsent() {
     >
       <div className="w-full max-w-xl">
         <div
-          className={`rounded-3xl bg-white shadow-xl border border-gray-100 p-6 sm:p-8 hover:shadow transform transition-all duration-500 ${
-            entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          } hover:-translate-y-0.5 hover:shadow-2xl`}
+          className={`rounded-3xl bg-white shadow-xl border border-gray-100 p-6 sm:p-8 hover:shadow transform transition-all duration-500 ${entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+            } hover:-translate-y-0.5 hover:shadow-2xl`}
         >
           {/* Language toggle */}
           <div className="flex justify-end mb-4">

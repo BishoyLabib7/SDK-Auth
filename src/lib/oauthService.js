@@ -27,7 +27,11 @@ export async function getOAuthState(params) {
       consent_token: params.consent_token || ''
     });
 
-    const response = await fetch(`/oauth2/api/oauth/state?${queryParams}`, {
+    const url = `/oauth2/api/oauth/state?${queryParams}`;
+    console.log('🔵 [FETCH] GET', url);
+    console.log('  Params:', params);
+
+    const response = await fetch(url, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -35,12 +39,17 @@ export async function getOAuthState(params) {
       }
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.error_description || `HTTP ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       throw new Error('Network error. Please check your connection.');
@@ -62,28 +71,39 @@ export async function getOAuthState(params) {
  */
 export async function submitOAuthLogin(email, password, oauthParams) {
   try {
-    const response = await fetch('/oauth2/api/oauth/login', {
+    const url = '/oauth2/api/oauth/login';
+    const body = {
+      email,
+      password,
+      redirect_uri: oauthParams.redirect_uri
+      // Note: response_type, scope, and state are stored in session on backend
+      // They don't need to be sent with login request
+    };
+
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', { email, redirect_uri: oauthParams.redirect_uri });
+
+    const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        email,
-        password,
-        redirect_uri: oauthParams.redirect_uri
-        // Note: response_type, scope, and state are stored in session on backend
-        // They don't need to be sent with login request
-      })
+      body: JSON.stringify(body)
     });
+
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.error_description || `HTTP ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       throw new Error('Network error. Please check your connection.');
@@ -111,9 +131,11 @@ export async function submitOAuthConsent(approved, consentToken, oauthParams) {
       redirect_uri: oauthParams.redirect_uri // Backend requires redirect_uri
     };
     
-    console.log('submitOAuthConsent - sending to backend:', requestBody);
+    const url = '/oauth2/api/oauth/consent';
+    console.log('🔵 [FETCH] POST', url);
+    console.log('  Body:', requestBody);
     
-    const response = await fetch('/oauth2/api/oauth/consent', {
+    const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -123,12 +145,17 @@ export async function submitOAuthConsent(approved, consentToken, oauthParams) {
       body: JSON.stringify(requestBody)
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.error_description || `HTTP ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       throw new Error('Network error. Please check your connection.');
@@ -155,7 +182,11 @@ export async function checkOAuthAuthorization(oauthParams) {
       state: oauthParams.state || ''
     });
 
-    const response = await fetch(`/oauth2/api/oauth/authorize?${queryParams}`, {
+    const url = `/oauth2/api/oauth/authorize?${queryParams}`;
+    console.log('🔵 [FETCH] GET', url);
+    console.log('  Params:', oauthParams);
+
+    const response = await fetch(url, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -163,12 +194,17 @@ export async function checkOAuthAuthorization(oauthParams) {
       }
     });
 
+    console.log('🔵 [RESPONSE]', response.status, response.statusText);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log('🔴 [ERROR]', errorData);
       throw new Error(errorData.error_description || `HTTP ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [SUCCESS]', data);
+    return data;
   } catch (error) {
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       throw new Error('Network error. Please check your connection.');
