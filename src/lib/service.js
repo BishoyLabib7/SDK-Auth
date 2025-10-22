@@ -9,6 +9,9 @@ export async function loginWithEmailPassword(email, password, remember) { }
  * @param {string} [oauthParams.state] - The state parameter
  */
 export async function loginWithGoogle(oauthParams) {
+  console.log('=== loginWithGoogle called ===');
+  console.log('oauthParams:', oauthParams);
+  
   // Store callback context in sessionStorage (will be read after redirect)
   const contextData = {
     callback_url: window.location.origin,
@@ -18,19 +21,25 @@ export async function loginWithGoogle(oauthParams) {
 
   // If we have OAuth parameters, pass them through the state parameter
   if (oauthParams && oauthParams.redirect_uri) {
-    // Generate a simple state identifier
-    const stateId = Math.random().toString(36).substring(2, 15);
+    // Encode OAuth context as base64 JSON (backend expects this format)
+    const stateData = {
+      redirect_uri: oauthParams.redirect_uri,
+      response_type: oauthParams.response_type || 'code',
+      scope: oauthParams.scope || '',
+      state: oauthParams.state || ''
+    };
+    const encodedState = encodeURIComponent(btoa(JSON.stringify(stateData)));
     
-    // Store OAuth context in sessionStorage with the state ID
-    sessionStorage.setItem(`oauth_state_${stateId}`, JSON.stringify(oauthParams));
+    console.log('OAuth context to encode:', stateData);
+    console.log('Encoded state:', encodedState);
     
-    console.log('State ID generated:', stateId);
-    console.log('OAuth params stored for state:', stateId);
-    
-    const googleUrl = `/api/Auth/google?state=${stateId}`;
-    console.log('Redirecting to Google OAuth with URL:', googleUrl);
+    const googleUrl = `/api/Auth/google?state=${encodedState}`;
+    console.log('Full Google OAuth URL:', window.location.origin + googleUrl);
+    console.log('Redirecting to Google OAuth...');
     window.location.href = googleUrl;
   } else {
+    console.log('No OAuth params - regular Google login');
+    console.log('Redirecting to:', window.location.origin + '/api/Auth/google');
     // Regular Google OAuth without OAuth context
     window.location.href = '/api/Auth/google';
   }

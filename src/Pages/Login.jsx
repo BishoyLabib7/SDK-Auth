@@ -40,15 +40,24 @@ export default function Login() {
     const urlParams = new URLSearchParams(window.location.search);
     const redirect_uri = urlParams.get('redirect_uri');
     
+    console.log('=== Login Page Mount ===');
+    console.log('Full URL:', window.location.href);
+    console.log('Search params:', window.location.search);
+    console.log('redirect_uri from URL:', redirect_uri);
+    
     if (redirect_uri) {
       // This is an OAuth flow - store parameters
       // Note: setOAuthParams will generate state if not provided
-      setOAuthParams({
+      const params = {
         redirect_uri,
         response_type: urlParams.get('response_type') || 'code',
         scope: urlParams.get('scope') || '',
         state: urlParams.get('state') || ''
-      });
+      };
+      console.log('Setting OAuth params:', params);
+      setOAuthParams(params);
+    } else {
+      console.log('No redirect_uri in URL - NOT an OAuth flow');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount - setOAuthParams is stable
@@ -143,8 +152,11 @@ export default function Login() {
   function handleGoogleSignIn() {
     initializeFirebaseIfNeeded();
     
-    console.log('Google sign in - isInOAuthFlow:', isInOAuthFlow());
-    console.log('OAuth params:', oauthParams);
+    console.log('=== Google Sign In Debug ===');
+    console.log('isInOAuthFlow:', isInOAuthFlow());
+    console.log('oauthParams:', oauthParams);
+    console.log('URL search params:', window.location.search);
+    console.log('SessionStorage oauth_params:', sessionStorage.getItem('oauth_params'));
     
     // If in OAuth flow, preserve OAuth parameters for social login callback
     if (isInOAuthFlow()) {
@@ -153,7 +165,7 @@ export default function Login() {
       console.log('Calling loginWithGoogle with OAuth params:', oauthParams);
       loginWithGoogle(oauthParams);
     } else {
-      console.log('Calling loginWithGoogle without OAuth params');
+      console.log('Calling loginWithGoogle without OAuth params (NOT in OAuth flow)');
       loginWithGoogle();
     }
   }
