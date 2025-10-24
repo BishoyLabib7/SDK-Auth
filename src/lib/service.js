@@ -11,7 +11,7 @@ export async function loginWithEmailPassword(email, password, remember) { }
 export async function loginWithGoogle(oauthParams) {
   console.log('=== loginWithGoogle called ===');
   console.log('oauthParams:', oauthParams);
-  
+
   // Store callback context in sessionStorage (will be read after redirect)
   const contextData = {
     callback_url: window.location.origin,
@@ -29,10 +29,10 @@ export async function loginWithGoogle(oauthParams) {
       state: oauthParams.state || ''
     };
     const encodedState = encodeURIComponent(btoa(JSON.stringify(stateData)));
-    
+
     console.log('OAuth context to encode:', stateData);
     console.log('Encoded state:', encodedState);
-    
+
     const googleUrl = `/oauth2/api/Auth/google?state=${encodedState}`;
     console.log('Full Google OAuth URL:', window.location.origin + googleUrl);
     console.log('Redirecting to Google OAuth...');
@@ -54,6 +54,9 @@ export async function loginWithGoogle(oauthParams) {
  * @param {string} [oauthParams.state] - The state parameter
  */
 export async function loginWithApple(oauthParams) {
+  console.log('=== loginWithApple called ===');
+  console.log('oauthParams:', oauthParams);
+
   // Store callback context in sessionStorage (will be read after redirect)
   const contextData = {
     callback_url: window.location.origin,
@@ -63,6 +66,7 @@ export async function loginWithApple(oauthParams) {
 
   // If we have OAuth parameters, pass them through the state parameter
   if (oauthParams && oauthParams.redirect_uri) {
+    // Encode OAuth context as base64 JSON (backend expects this format)
     const stateData = {
       redirect_uri: oauthParams.redirect_uri,
       response_type: oauthParams.response_type || 'code',
@@ -70,8 +74,17 @@ export async function loginWithApple(oauthParams) {
       state: oauthParams.state || ''
     };
     const encodedState = encodeURIComponent(btoa(JSON.stringify(stateData)));
-    window.location.href = `/oauth2/api/Auth/apple?state=${encodedState}`;
+
+    console.log('OAuth context to encode:', stateData);
+    console.log('Encoded state:', encodedState);
+
+    const appleUrl = `/oauth2/api/Auth/apple?state=${encodedState}`;
+    console.log('Full Apple OAuth URL:', window.location.origin + appleUrl);
+    console.log('Redirecting to Apple OAuth...');
+    window.location.href = appleUrl;
   } else {
+    console.log('No OAuth params - regular Apple login');
+    console.log('Redirecting to:', window.location.origin + '/oauth2/api/Auth/apple');
     // Regular Apple OAuth without OAuth context
     window.location.href = '/oauth2/api/Auth/apple';
   }
