@@ -31,6 +31,7 @@ export default function App() {
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/success" element={<Success />} />
               <Route path="/oauth/authorize" element={<OAuthAuthorize />} />
+              <Route path="/oauth/consent" element={<OAuthConsent />} />
               <Route path="/auth/oauth/consent" element={<OAuthConsent />} />
               <Route path="/auth/complete-registration" element={<CompleteRegistration />} />
               <Route path="/auth/success" element={<AuthSuccess />} />
