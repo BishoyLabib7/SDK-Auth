@@ -12,7 +12,7 @@ import { mapOAuthError } from "../lib/oauthErrorHandler";
 
 export default function OAuthConsent() {
   const { language, translations: t, toggleLanguage, isRTL } = useTranslation();
-  const { oauthParams, consentData, clearOAuthContext } = useOAuthContext();
+  const { oauthParams: contextOAuthParams, consentData, clearOAuthContext } = useOAuthContext();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,26 +24,46 @@ export default function OAuthConsent() {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // State for consent token from URL
+  // State for consent token and OAuth params from URL
   const [consentToken, setConsentToken] = useState(null);
+  const [urlOAuthParams, setUrlOAuthParams] = useState(null);
+  
+  // Use context params or URL params
+  const oauthParams = contextOAuthParams || urlOAuthParams;
 
   // Load consent data on mount if not in context
   useEffect(() => {
     if (!consentData) {
       // Try to get consent data from URL params
       const urlParams = new URLSearchParams(window.location.search);
-      const tokenFromUrl = urlParams.get('consent_token');
+      const tokenFromUrl = urlParams.get('consent_token') || urlParams.get('token');
 
       if (tokenFromUrl) {
         setConsentToken(tokenFromUrl);
         console.log('Consent token from URL:', tokenFromUrl);
-      } else if (!oauthParams) {
+      }
+      
+      // Also try to load OAuth params from URL
+      const redirectUri = urlParams.get('redirect_uri');
+      if (redirectUri) {
+        const params = {
+          redirect_uri: redirectUri,
+          response_type: urlParams.get('response_type') || 'code',
+          scope: urlParams.get('scope') || '',
+          state: urlParams.get('state') || ''
+        };
+        setUrlOAuthParams(params);
+        console.log('OAuth params from URL:', params);
+      }
+      
+      // Check if we have required data
+      if (!tokenFromUrl || (!contextOAuthParams && !redirectUri)) {
         const errorInfo = mapOAuthError("Missing required parameters", t);
         setError(errorInfo.message);
         setErrorType(errorInfo.type);
       }
     }
-  }, [consentData, oauthParams, t]);
+  }, [consentData, contextOAuthParams, t]);
 
   async function handleApprove() {
     const tokenToUse = consentData?.consent_token || consentToken;

@@ -60,7 +60,22 @@ export default function CompleteRegistration() {
       if (status === "consent_required") {
         // Redirect to consent page with the consent token
         const consentToken = data.consent_token || result.consent_token;
-        navigate(`/oauth/consent?token=${encodeURIComponent(consentToken)}`);
+        
+        // Preserve OAuth params in URL for consent page
+        const oauthContext = sessionStorage.getItem('oauth_callback_context');
+        let consentUrl = `/oauth/consent?consent_token=${encodeURIComponent(consentToken)}`;
+        
+        if (oauthContext) {
+          const params = JSON.parse(oauthContext);
+          if (params.redirect_uri) {
+            consentUrl += `&redirect_uri=${encodeURIComponent(params.redirect_uri)}`;
+            consentUrl += `&response_type=${encodeURIComponent(params.response_type || 'code')}`;
+            consentUrl += `&scope=${encodeURIComponent(params.scope || '')}`;
+            consentUrl += `&state=${encodeURIComponent(params.state || '')}`;
+          }
+        }
+        
+        navigate(consentUrl);
       } else if (status === "authorized") {
         // Redirect to third-party app
         const redirectUrl = data.redirect_url || result.redirect_url;
