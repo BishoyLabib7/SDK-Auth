@@ -52,22 +52,25 @@ export default function CompleteRegistration() {
       const result = await response.json();
       console.log('Registration response:', result);
 
+      // Extract data from wrapped response if needed
+      const data = result.data || result;
+      const status = data.status || result.status;
+
       // Handle different response types
-      if (result.status === "consent_required") {
-        // Redirect to consent page
-        navigate(`/oauth/consent?token=${encodeURIComponent(result.consent_token)}`);
-      } else if (result.status === "authorized") {
+      if (status === "consent_required") {
+        // Redirect to consent page with the consent token
+        const consentToken = data.consent_token || result.consent_token;
+        navigate(`/oauth/consent?token=${encodeURIComponent(consentToken)}`);
+      } else if (status === "authorized") {
         // Redirect to third-party app
-        window.location.href = result.redirect_url;
+        const redirectUrl = data.redirect_url || result.redirect_url;
+        window.location.href = redirectUrl;
       } else if (result.token) {
         // Direct token in response
         navigate(`/auth/success?token=${encodeURIComponent(result.token)}`);
-      } else if (result.data && result.data.token) {
-        // Token wrapped in data object
-        navigate(`/auth/success?token=${encodeURIComponent(result.data.token)}`);
-      } else if (result.success && result.data && result.data.token) {
-        // Token wrapped in success response
-        navigate(`/auth/success?token=${encodeURIComponent(result.data.token)}`);
+      } else if (data.token) {
+        // Token in data object
+        navigate(`/auth/success?token=${encodeURIComponent(data.token)}`);
       } else {
         console.log('Unexpected response format:', result);
         setError("Registration completed but received unexpected response format");
